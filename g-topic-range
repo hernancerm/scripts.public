@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Description:
+# From a Git repository in the current directory and provided a merge commit,
+# get the range of commits of the merged topic branch. It is not required that
+# HEAD is at any specific position.
+#
+# Parameters:
+# $1: Reference to the merge commit.
+#
+# Example invocation:
+# $ g-topic-range 8ef259931b8
+# 679f3915cc0^2 ^8f50637952caf65bf6cf73c2d959c38bbb677719
+#
+# The output is meant to be used by a Git command, e.g.:
+# git log --oneline $(g-topic-range 8ef259931b8)
+
+MERGE_BASE=$(git merge-base $1^ $1^2)
+echo $1^2 ^$MERGE_BASE
+

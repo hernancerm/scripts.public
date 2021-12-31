@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# TODO: Accept n branches, not just 2. Find conflicts between ever pair
+# of "first branch <-> other branches".
+
+# Parameters
+# $1: Branch1
+# $2: Branch2
+
+# TODO: If its a branch, fetch from origin before doing the in-memory merge.
+
+# Git diff delimiters.
+CONFLICT_DELIMITER="changed in both"
+NON_CONFLICT_DELIMITERS="(merged)" # TODO: Add complete list of delimtiers.
+
+merge_base=$(git merge-base $1 $2)
+
+echo $merge_base $1 $2
+
+# Do in-memory merge and print output to stdout.
+# This does not modify the working tree nor the index.
+git merge-tree $merge_base $1 $2 | \
+
+  # Filter output to only show merge conflicts.
+  awk "/^${CONFLICT_DELIMITER}/{ f = 1 } /^${NON_CONFLICT_DELIMITERS}/{f = 0} f" | \
+
+  # See in pager, don't just dump to stdout.
+  less --pattern "${CONFLICT_DELIMITER}"
