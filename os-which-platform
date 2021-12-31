@@ -1,0 +1,13 @@
+#!/bin/bash
+
+PLATFORM="$(uname -s)"
+
+case "${PLATFORM}" in
+    Linux*)     MACHINE=linux;;
+    Darwin*)    MACHINE=mac;;
+    CYGWIN*)    MACHINE=cygwin;;
+    MINGW*)     MACHINE=mingw;;
+    *)          MACHINE="UNKNOWN:${PLATFORM}"
+esac
+
+echo ${MACHINE}
