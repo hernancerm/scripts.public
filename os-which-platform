@@ -1,13 +1,14 @@
 #!/bin/bash
 
-PLATFORM="$(uname -s)"
+UNAME_OUTPUT="$(uname -s)"
 
-case "${PLATFORM}" in
-    Linux*)     MACHINE=linux;;
-    Darwin*)    MACHINE=mac;;
-    CYGWIN*)    MACHINE=cygwin;;
-    MINGW*)     MACHINE=mingw;;
-    *)          MACHINE="UNKNOWN:${PLATFORM}"
+case "${UNAME_OUTPUT}" in
+  Linux*)   PLATFORM=linux;;
+  Darwin*)  PLATFORM=mac;;
+  CYGWIN*)  PLATFORM=cygwin;;
+  MINGW*)   PLATFORM=mingw;;
+  *)        PLATFORM="unknown:${UNAME_OUTPUT}"
 esac
 
-echo ${MACHINE}
+echo ${PLATFORM}
+

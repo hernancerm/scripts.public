@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Description:
+# Clean the provided list of files. Notice that "cleaning" means to remove its
+# contents but don't delete the filename.
+#
+# Parameters:
+# $@: List of files to clean.
+
+for file in "$@"; do
+  :> "$file" && echo "Cleaned contents of: $file"
+done
+
