@@ -3,12 +3,12 @@
 UNAME_OUTPUT="$(uname -s)"
 
 case "${UNAME_OUTPUT}" in
-  Linux*)   PLATFORM=linux;;
-  Darwin*)  PLATFORM=mac;;
-  CYGWIN*)  PLATFORM=cygwin;;
-  MINGW*)   PLATFORM=mingw;;
-  *)        PLATFORM="unknown:${UNAME_OUTPUT}"
+  Linux*)   OS=linux;;
+  Darwin*)  OS=mac;;
+  CYGWIN*)  OS=cygwin;;
+  MINGW*)   OS=mingw;;
+  *)        OS="unknown:${UNAME_OUTPUT}"
 esac
 
-echo ${PLATFORM}
+echo ${OS}
 
