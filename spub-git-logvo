@@ -1,0 +1,22 @@
+#!/bin/bash
+
+GIT_LOG_PRETTY_FORMAT=' %C(yellow)%h %C(bold blue)PARENTS%pPARENTS%C(reset) %C(italic green)%ad %C(reset)%C(cyan)%an%C(auto)%d %C(auto)%s'
+
+git -c color.diff=always log --pretty=format:"$GIT_LOG_PRETTY_FORMAT" --date=short $* \
+  | awk '{
+           # Determine if the commit is a merge commit.
+           isMergeCommit=match($0, /PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS/);
+
+           # Set a marker on the commit to indicate it is a merge commit.
+           # This is done by replacing the commit parents for the marker.
+           mergeMarker=" ";
+           if (isMergeCommit > 0) {
+             mergeMarker="M"
+           }
+           sub("PARENTS.*PARENTS", mergeMarker);
+
+           # Print the commit info with the merge marker.
+           print $0
+         }' \
+  | delta
+
