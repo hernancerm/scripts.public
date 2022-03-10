@@ -1,22 +1,38 @@
 #!/bin/bash
 
-GIT_LOG_PRETTY_FORMAT=' %C(yellow)%h %C(bold blue)PARENTS%pPARENTS%C(reset) %C(italic green)%ad %C(reset)%C(cyan)%an%C(auto)%d %C(auto)%s'
+# Description:
+# Provide enhanced control over `git-log` output by making it possible to use a
+# shell pipeline to transform the commit format as required. This script is
+# meant to be used as a git alias, e.g.:
+#
+# ```
+# [alias]
+#   logvo = !spub-git-logvo
+# ```
+#
+# Parameters:
+# $*: Options for `git-log`.
+
+# For any substring that is substituted, using word delimiters (e.g. HASH), is
+# a simple way to make the intended substitution possible even when ANSI color
+# codes are involved. I have not found a way to successfully substitute without
+# these delimiters, so I highly recommend using them.
+GIT_LOG_PRETTY_FORMAT='HASH%hHASHPARENTS%pPARENTS %C(italic green)%ad %C(reset)%C(cyan)%an%C(auto)%d %C(auto)%s'
 
 git -c color.diff=always log --pretty=format:"$GIT_LOG_PRETTY_FORMAT" --date=short $* \
-  | awk '{
+  | gawk '{
            # Determine if the commit is a merge commit.
            isMergeCommit=match($0, /PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS/);
+           sub(/PARENTS.*PARENTS/, "");
 
-           # Set a marker on the commit to indicate it is a merge commit.
-           # This is done by replacing the commit parents for the marker.
-           mergeMarker=" ";
+           # Change color of the commit hash if the commit is a merge commit (i.e. has more than one parent).
            if (isMergeCommit > 0) {
-             mergeMarker="M"
+             commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1"ENVIRON["C_BOLD"]ENVIRON["C_BLUE"]"\\2"ENVIRON["C_RESET"]"\\3", "g");
+           } else {
+             commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1\\2\\3", "g");
            }
-           sub("PARENTS.*PARENTS", mergeMarker);
 
-           # Print the commit info with the merge marker.
-           print $0
+           print commit
          }' \
   | delta
 
