@@ -1,11 +1,19 @@
 #!/bin/bash
 
 # Description:
+# -----------
 # Get the background color of the terminal. For now, it's hardcoded, but this
 # could be refactored to scrap it from the term-specific config file.
 #
-# Parameters:
-# (none)
+# Parameters: (none)
+# ----------
+#
+# Examples:
+# --------
+# ```
+# $ spub-term-get-bgcolor
+# #ffffff
+# ```
 
 printf '#ffffff'
 

@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# Description:
+# -----------
+# Get a OS label for the current machine.
+#
+# Parameters: (none).
+# ----------
+#
+# Examples:
+# --------
+# Learn that the current OS is macOS.
+# ```
+# $ spub-os-which
+# mac
+# ```
+
 UNAME_OUTPUT="$(uname -s)"
 
 case "${UNAME_OUTPUT}" in
