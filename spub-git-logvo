@@ -26,22 +26,28 @@
 # a simple way to make the intended substitution possible even when ANSI color
 # codes are involved. I have not found a way to successfully substitute without
 # these delimiters, so I highly recommend using them.
-GIT_LOG_PRETTY_FORMAT='HASH%hHASHPARENTS%pPARENTS %C(italic green)%ad %C(reset)%C(cyan)%an%C(auto)%d %C(auto)%s'
+GIT_LOG_PRETTY_FORMAT='HASH%hHASHPARENTS%pPARENTS %C(green)%ad %C(reset)%C(cyan)%an%C(auto)%d %C(auto)%s'
 
+# The ANSI escape code for italic text is: `ESC[3m`, where `ESC` is the ASCII escape character.
+# Every ANSI escape code begins with this `ESC`. In hexadecimal, this character is 1B, and the
+# escape sequence `\x` in gawk interprets hex digits as a character. Thus, the special italic
+# ANSI escape code is provided as a variable. Learn more:
+# - ANSI escape codes: <https://en.wikipedia.org/wiki/ANSI_escape_code>
+# - ASCII escape character: <https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character>
 git -c color.diff=always log --pretty=format:"$GIT_LOG_PRETTY_FORMAT" --date=short $* \
-  | gawk '{
-           # Determine if the commit is a merge commit.
-           isMergeCommit=match($0, /PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS/);
-           sub(/PARENTS.*PARENTS/, "");
+  | gawk -v C_ITALIC='\x1B[3m' '{
+        # Determine if the commit is a merge commit.
+        isMergeCommit=match($0, /PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS/);
+        sub(/PARENTS.*PARENTS/, "");
 
-           # Change color of the commit hash if the commit is a merge commit (i.e. has more than one parent).
-           if (isMergeCommit > 0) {
-             commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1"ENVIRON["C_BOLD"]ENVIRON["C_BLUE"]"\\2"ENVIRON["C_RESET"]"\\3", "g");
-           } else {
-             commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1\\2\\3", "g");
-           }
+        # Change color of the commit hash if the commit is a merge commit (i.e. has more than one parent).
+        if (isMergeCommit > 0) {
+          commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g");
+        } else {
+          commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1" C_ITALIC ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g");
+        }
 
-           print commit
-         }' \
+        print commit
+      }' \
   | delta
 
