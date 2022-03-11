@@ -33,7 +33,7 @@ GIT_LOG_PRETTY_FORMAT='~HASH%hHASH~~PARENTS%pPARENTS~ %C(green)%ad%C(reset) ~A_N
 # ANSI escape code is provided as a variable. Learn more:
 # - ANSI escape codes: <https://en.wikipedia.org/wiki/ANSI_escape_code>
 # - ASCII escape character: <https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character>
-git log --color=always --date=short --pretty=format:"$GIT_LOG_PRETTY_FORMAT" $* \
+git log --color=always --date="format:%d-%b-%Y" --pretty=format:"$GIT_LOG_PRETTY_FORMAT" $* \
   | gawk -v C_ITALIC='\x1B[3m' '{
         commit = $0
 
