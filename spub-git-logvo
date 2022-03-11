@@ -4,7 +4,7 @@
 # -----------
 # Provide enhanced control over `git-log` output by making it possible to use a
 # shell pipeline to transform the commit format as required. This script is
-# meant to be used as a git alias, e.g.:
+# meant to be used as a Git alias, e.g.:
 # ```
 # [alias]
 #   logvo = !spub-git-logvo
@@ -22,11 +22,10 @@
 # ...
 # ```
 
-# For any substring that is substituted, using word delimiters (e.g. HASH), is
-# a simple way to make the intended substitution possible even when ANSI color
-# codes are involved. I have not found a way to successfully substitute without
-# these delimiters, so I highly recommend using them.
-GIT_LOG_PRETTY_FORMAT='HASH%hHASHPARENTS%pPARENTS %C(green)%ad %C(reset)%C(cyan)%an%C(auto)%d %C(auto)%s'
+# For any substring that is substituted, using unconventional word delimiters
+# (e.g. ~HASH...Hash~), is a simple way to make the intended substitution
+# possible even when ANSI color codes are involved.
+GIT_LOG_PRETTY_FORMAT='~HASH%hHASH~~PARENTS%pPARENTS~ %C(green)%ad%C(reset) ~A_NAME%anA_NAME~~C_NAME%cnC_NAME~%C(auto)%d %C(auto)%s'
 
 # The ANSI escape code for italic text is: `ESC[3m`, where `ESC` is the ASCII escape character.
 # Every ANSI escape code begins with this `ESC`. In hexadecimal, this character is 1B, and the
@@ -34,17 +33,34 @@ GIT_LOG_PRETTY_FORMAT='HASH%hHASHPARENTS%pPARENTS %C(green)%ad %C(reset)%C(cyan)
 # ANSI escape code is provided as a variable. Learn more:
 # - ANSI escape codes: <https://en.wikipedia.org/wiki/ANSI_escape_code>
 # - ASCII escape character: <https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character>
-git -c color.diff=always log --pretty=format:"$GIT_LOG_PRETTY_FORMAT" --date=short $* \
+git log --color=always --date=short --pretty=format:"$GIT_LOG_PRETTY_FORMAT" $* \
   | gawk -v C_ITALIC='\x1B[3m' '{
-        # Determine if the commit is a merge commit.
-        isMergeCommit=match($0, /PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS/);
-        sub(/PARENTS.*PARENTS/, "");
+        commit = $0
 
-        # Change color of the commit hash if the commit is a merge commit (i.e. has more than one parent).
-        if (isMergeCommit > 0) {
-          commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g");
+        # Determine if the commit is a merge commit.
+        isMergeCommit = match($0, /~PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS~/);
+        sub(/~PARENTS.*PARENTS~/, "", commit);
+
+        # Set special style for the commit hash when it identifies a merge commit (i.e. has more than one parent).
+        if (isMergeCommit) {
+          commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
         } else {
-          commit=gensub(/^(.*)HASH(.*)HASH(.*)/, "\\1" C_ITALIC ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g");
+          commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" C_ITALIC ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
+        }
+
+        # Determie if the author is different from the committer.
+        match($0, /~A_NAME(.*)A_NAME~/, authorNameMatches);
+        match($0, /~C_NAME(.*)C_NAME~/, committerNameMatches);
+        isAuthorDiffFromCommiter = authorNameMatches[1] != committerNameMatches[1]
+        sub(/~C_NAME.*C_NAME~/, "", commit);
+
+        # Set special style for the author name when it is different from the committer name.
+        # The author is different from the commiter name when a regular (non-merge) commit is rewritten by a history-rewriting command, such as
+        # `git commit --amend`, or when the person applying the patch is different from the author, e.g. when sending a patch by email.
+        if (isAuthorDiffFromCommiter) {
+          commit = gensub(/^(.*)~A_NAME(.*)A_NAME~(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_CYAN"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
+        } else {
+          commit = gensub(/^(.*)~A_NAME(.*)A_NAME~(.*)/, "\\1" C_ITALIC ENVIRON["C_CYAN"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
         }
 
         print commit
