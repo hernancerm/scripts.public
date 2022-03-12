@@ -36,34 +36,34 @@ GIT_LOG_DATE_FORMAT="format:\
 ~A_DATE_DAY_2D%dA_DATE_DAY_2D~"
 GIT_LOG_FORMAT="${HASH_SECTION} ${DATE_SECTION} ${AUTHOR_SECTION} ${MESSAGE_SECTION}"
 
-# How to emphasize the today's date:
-# 1. Provide date componentes in variable DATE_SECTION:
-#    Day in 2 digits, month in three letters, month in 2 digits, year in 4 digits.
-# 2. Build ISO 8601 date for the commit (build it from the date components).
-# 3. Determine if the commit is from today, if yes set a boolean to true, else to false.
-# 4. Build date format for the commit (build it from the date components).
-# 5. gensub() to properly format the date accounting for if it is from today.
-
 # The ANSI escape code for italic text is: `ESC[3m`, where `ESC` is the ASCII escape character.
 # Every ANSI escape code begins with this `ESC`. In hexadecimal, this character is 1B, and the
 # escape sequence `\x` in gawk interprets hex digits as a character. Thus, the special italic
 # ANSI escape code is provided as a variable. Learn more:
 # - ANSI escape codes: <https://en.wikipedia.org/wiki/ANSI_escape_code>
 # - ASCII escape character: <https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character>
-# --date="format:%d/%b/%y"
+GAWK_VARIABLES="\
+-v ITALIC=\x1B[3m \
+-v BOLD=$C_BOLD \
+-v RESET=$C_RESET \
+-v YELLOW=$C_YELLOW \
+-v CYAN=$C_CYAN \
+-v GREEN=$C_GREEN \
+-v TODAY=$(date -I) "
+
 git log --color=always --date="$GIT_LOG_DATE_FORMAT" --pretty=format:"$GIT_LOG_FORMAT" $* \
-  | gawk -v C_ITALIC='\x1B[3m' -v TODAY="$(date -I)" '{
+  | gawk $GAWK_VARIABLES '{
         commit = $0;
 
         # Determine if the commit is a merge commit.
         isMergeCommit = match($0, /~PARENTS[a-z0-9]+ [a-z0-9 ]+PARENTS~/);
         sub(/~PARENTS.*PARENTS~/, "", commit);
 
-        # Set special style for the commit hash when it identifies a merge commit (i.e. has more than one parent).
+        # Set special style for the hash when it identifies a merge commit (i.e. has more than one parent).
         if (isMergeCommit) {
-          commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
+          commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" BOLD YELLOW "\\2" RESET "\\3", "g", commit);
         } else {
-          commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" C_ITALIC ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
+          commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" C_ITALIC YELLOW "\\2" RESET "\\3", "g", commit);
         }
 
         # Determie if commit is from today.
@@ -81,9 +81,11 @@ git log --color=always --date="$GIT_LOG_DATE_FORMAT" --pretty=format:"$GIT_LOG_F
         adFormatted = adDay2dMatches[1] "/" adMonth3lMatches[1] "/" substr(adYear4dMatches[1], 3);
         # Set special style for date if it is a commit from today.
         if (isCommitFromToday) {
-          commit = gensub(/^(.*)~A_DATE_COMPONENTS(.*)A_DATE_COMPONENTS~(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_GREEN"] adFormatted ENVIRON["C_RESET"] "\\3", "g", commit);
+          commit = gensub(/^(.*)~A_DATE_COMPONENTS(.*)A_DATE_COMPONENTS~(.*)/,
+              "\\1" BOLD GREEN adFormatted RESET "\\3", "g", commit);
         } else {
-          commit = gensub(/^(.*)~A_DATE_COMPONENTS(.*)A_DATE_COMPONENTS~(.*)/, "\\1" C_ITALIC ENVIRON["C_GREEN"] adFormatted ENVIRON["C_RESET"] "\\3", "g", commit);
+          commit = gensub(/^(.*)~A_DATE_COMPONENTS(.*)A_DATE_COMPONENTS~(.*)/,
+              "\\1" C_ITALIC GREEN adFormatted RESET "\\3", "g", commit);
         }
 
         # Determie if the author is different from the committer (either name or email).
@@ -97,12 +99,13 @@ git log --color=always --date="$GIT_LOG_DATE_FORMAT" --pretty=format:"$GIT_LOG_F
         isAuthorDiffFromCommiter = anMatches[1] != cnMatches[1] || aeMatches[1] != ceMatches[1];
 
         # Set special style for the author name when it is different from the committer name.
-        # The author is different from the commiter name when a regular (non-merge) commit is rewritten by a history-rewriting command, such as
-        # `git commit --amend`, or when the person applying the patch is different from the author, e.g. when sending a patch by email.
+        # The author is different from the commiter name when a regular (non-merge) commit is rewritten
+        # by a history-rewriting command, such as `git commit --amend`, or when the person applying the
+        # patch is different from the author, e.g. when sending a patch by email.
         if (isAuthorDiffFromCommiter) {
-          commit = gensub(/^(.*)~A_NAME(.*)A_NAME~(.*)/, "\\1" ENVIRON["C_BOLD"] ENVIRON["C_CYAN"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
+          commit = gensub(/^(.*)~A_NAME(.*)A_NAME~(.*)/, "\\1" BOLD CYAN "\\2" RESET "\\3", "g", commit);
         } else {
-          commit = gensub(/^(.*)~A_NAME(.*)A_NAME~(.*)/, "\\1" C_ITALIC ENVIRON["C_CYAN"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
+          commit = gensub(/^(.*)~A_NAME(.*)A_NAME~(.*)/, "\\1" C_ITALIC CYAN "\\2" RESET "\\3", "g", commit);
         }
 
         print commit;
