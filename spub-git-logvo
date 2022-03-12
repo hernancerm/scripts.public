@@ -25,7 +25,11 @@
 # For any substring that is substituted, using unconventional word delimiters
 # (e.g. ~HASH...Hash~), is a simple way to make the intended substitution
 # possible even when ANSI color codes are involved.
-GIT_LOG_PRETTY_FORMAT='~HASH%hHASH~~PARENTS%pPARENTS~ %C(green)%ad%C(reset) ~A_NAME%anA_NAME~~C_NAME%cnC_NAME~%C(auto)%d %C(auto)%s'
+HASH_SECTION='~HASH%hHASH~~PARENTS%pPARENTS~'
+DATE_SECTION='%C(green)%ad%C(reset)'
+AUTHOR_SECTION='~A_NAME%anA_NAME~~C_NAME%cnC_NAME~~A_EMAIL%aeA_EMAIL~~C_EMAIL%ceC_EMAIL~'
+MESSAGE_SECTION='%C(auto)%d %C(auto)%s'
+GIT_LOG_PRETTY_FORMAT="${HASH_SECTION} ${DATE_SECTION} ${AUTHOR_SECTION} ${MESSAGE_SECTION}"
 
 # The ANSI escape code for italic text is: `ESC[3m`, where `ESC` is the ASCII escape character.
 # Every ANSI escape code begins with this `ESC`. In hexadecimal, this character is 1B, and the
@@ -48,11 +52,15 @@ git log --color=always --date="format:%d-%b-%Y" --pretty=format:"$GIT_LOG_PRETTY
           commit = gensub(/^(.*)~HASH(.*)HASH~(.*)/, "\\1" C_ITALIC ENVIRON["C_YELLOW"] "\\2" ENVIRON["C_RESET"] "\\3", "g", commit);
         }
 
-        # Determie if the author is different from the committer.
+        # Determie if the author is different from the committer (either name or email).
         match($0, /~A_NAME(.*)A_NAME~/, authorNameMatches);
         match($0, /~C_NAME(.*)C_NAME~/, committerNameMatches);
-        isAuthorDiffFromCommiter = authorNameMatches[1] != committerNameMatches[1]
+        match($0, /~A_EMAIL(.*)A_EMAIL~/, authorEmailMatches);
+        match($0, /~C_EMAIL(.*)C_EMAIL~/, committerEmailMatches);
+        isAuthorDiffFromCommiter = authorNameMatches[1] != committerNameMatches[1] || authorEmailMatches[1] != committerEmailMatches[1]
         sub(/~C_NAME.*C_NAME~/, "", commit);
+        sub(/~A_EMAIL.*A_EMAIL~/, "", commit);
+        sub(/~C_EMAIL.*C_EMAIL~/, "", commit);
 
         # Set special style for the author name when it is different from the committer name.
         # The author is different from the commiter name when a regular (non-merge) commit is rewritten by a history-rewriting command, such as
