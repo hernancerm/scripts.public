@@ -2,9 +2,9 @@
 
 # Description:
 # -----------
-# Provide enhanced control over `git-log` output by making it possible to use a
-# shell pipeline to transform the commit format as required. This script is
-# meant to be used as a Git alias, e.g.:
+# «git log verbose oneline», provides enhanced control over `git-log` output by
+# making it possible to use a shell pipeline to transform the commit format as
+# required. This script is meant to be used as a Git alias, e.g.:
 # ```
 # [alias]
 #   logvo = !spub-git-logvo
@@ -19,6 +19,12 @@
 # Get the first 10 commits in the branch `main`.
 # ```
 # $ spub-git-logvo main -10
+# ...
+# ```
+#
+# Or better, the same use case when configured as a Git alias:
+# ```
+# $ git logvo main -10
 # ...
 # ```
 
