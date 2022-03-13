@@ -1,0 +1,50 @@
+#!/bin/bash
+source "$SPUB/utils/delta-default-opts.sh"
+
+# Description:
+# -----------
+# Conditionally load search pattern on Delta's pager if a match can be found.
+# This has the purpose of always properly setting the navigation pattern for
+# diffs, when available.
+#
+# This script is meant to be used as a pager for Git sub-commands, e.g.:
+# ```
+#[pager]
+#  log = spub-git-delta-navigate
+#  diff = spub-git-delta-navigate
+#  show = spub-git-delta-navigate
+#  reflog = spub-git-delta-navigate
+# ```
+#
+# The Delta repository: <https://github.com/dandavison/delta>.
+#
+# Parameters: (none).
+# ----------
+
+# Git's raw output from the command ran by user.
+STDIN=$(cat -)
+
+# Determine if the output could be navigable by Delta's navigation markers.
+NAVIGATION_PATTERN='commit [a-z0-9]{40}|Δ|•|added: |removed: '
+NAVIGATION_PATTERN_MATCHES=$(printf "$STDIN" 2> /dev/null \
+    | delta --navigate \
+    | grep -E "${NAVIGATION_PATTERN}" \
+    | gawk 'END { print NR }')
+
+# Determine if the output can be entirely shown in a screen.
+VIEWABLE_IN_ONE_SCREEN=$(printf "$STDIN" 2> /dev/null \
+  | gawk -v LINES="$(tput lines)" 'END { if(NR<=LINES){print 1;}else{print 0;} }')
+
+# The output is not navigable, or wouldn't benefit from it; don't include search pattern.
+PAGER="less -irFM"
+if [[ $NAVIGATION_PATTERN_MATCHES -eq 0 || $VIEWABLE_IN_ONE_SCREEN -gt 0 ]]; then
+  printf "$STDIN" 2> /dev/null | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER"
+  exit 0
+fi
+
+# The output is navigable! Include search pattern.
+# (Navigate between shown files using n (next) and N (previous)).
+PAGER_WITH_PATTERN="$PAGER --pattern '$NAVIGATION_PATTERN'"
+printf "$STDIN" 2> /dev/null \
+    | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITH_PATTERN"
+
