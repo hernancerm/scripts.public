@@ -42,7 +42,7 @@ function stdd__get_field_from_raw {
 # Pretty print the provided lines of standard directories. This adds any styling
 # useful for a pleasing, human-readable presentation.
 #
-# @stdin valid line(s) of standard directory(ies).
+# @stdin valid raw line(s) of standard directory(ies).
 # @return pretty-printed standard directories.
 function stdd__pretty_print {
   local stdin="$(cat -)"
@@ -59,5 +59,25 @@ function stdd__get_field_from_pretty {
       | gawk -F'--' -i 'commons.gawk' -v field="${STDD__FIELD_OPTIONS[$1]}" \
           '{ print c::trim($field); }')"
   echo "$field_value"
+}
+
+# Crate, if not already existent, the directories that are marked with the
+# metadata value of `auto_create`.
+#
+# @stdin valid raw line(s) of raw standard directory(ies).
+function stdd__create_directories {
+  local stdin="$(cat -)"
+
+  local stdd
+  while IFS='' read -r stdd; do
+    local stdd_path="$(echo "$stdd" | stdd__get_field_from_raw 'path')"
+    local stdd_metadata="$(echo "$stdd" | stdd__get_field_from_raw 'metadata')"
+
+    if [[ "$stdd_metadata" =~ auto_create ]]; then
+      local stdd_path_expanded="$(eval echo $stdd_path)"
+      mkdir -vp "$stdd_path_expanded"
+    fi
+
+  done <<< "$stdin"
 }
 

@@ -1,9 +1,9 @@
-$SPUB              , Scripts public.          , no-auto-create
-$SPRI              , Scripts private.         , no-auto-create
-$DOTFILES          , Configuration files.     , no-auto-create
-$TEMP              , Temporary files.         , auto-create
-$HOME/Documents/Gl , Git my local-only repos. , auto-create
-$HOME/Documents/G- , Git my private repos.    , auto-create
-$HOME/Documents/G+ , Git my public repos.     , auto-create
-$HOME/Documents/Gf , Git my fork repos.       , auto-create
-$HOME/Documents/Gc , Git cloned repos.        , auto-create
+$SPUB              , Scripts public.          ,
+$SPRI              , Scripts private.         ,
+$DOTFILES          , Configuration files.     ,
+$TEMP              , Temporary files.         , auto_create
+$HOME/Documents/Gl , Git my local-only repos. , auto_create
+$HOME/Documents/G- , Git my private repos.    , auto_create
+$HOME/Documents/G+ , Git my public repos.     , auto_create
+$HOME/Documents/Gf , Git my fork repos.       , auto_create
+$HOME/Documents/Gc , Git cloned repos.        , auto_create
