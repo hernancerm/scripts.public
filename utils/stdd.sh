@@ -2,14 +2,21 @@
 
 # Manipulate «standard directories». These are directories which are
 # standard to my setup, and I commonly visit them. They are defined
-# in a CSV file. To learn what each column means, see the variable
-# `STDD__FIELD_OPTIONS`.
-
-declare -A STDD__FIELD_OPTIONS
-STDD__FIELD_OPTIONS=([path]=1 [description]=2 [metadata]=3)
+# in a CSV file.
 
 STDD__PUBLIC_FILEPATH='$SPUB/resources/stdd.pub.csv'
 STDD__PRIVATE_FILEPATH='$SPRI/resources/stdd.pri.csv'
+
+# @param `$1` field name, options: 'path', 'description', 'metadata'.
+function stdd__get_field_index {
+  local index
+  case "$1" in
+    path)        index=1;;
+    description) index=2;;
+    metadata)    index=3;;
+  esac
+  echo $index
+}
 
 # @return public standard directories as-are, no transormations applied to file.
 function stdd__get_pub_raw {
@@ -34,7 +41,7 @@ function stdd__get_all_raw {
 function stdd__get_field_from_raw {
   local stdin="$(cat -)"
   local field_value="$(echo "$stdin" \
-      | gawk -F',' -i 'commons.gawk' -v field="${STDD__FIELD_OPTIONS[$1]}" \
+      | gawk -F',' -i 'commons.gawk' -v field="$(stdd__get_field_index $1)" \
           '{ print c::trim($field); }')"
   echo "$field_value"
 }
@@ -56,7 +63,7 @@ function stdd__pretty_print {
 function stdd__get_field_from_pretty {
   local stdin="$(cat -)"
   local field_value="$(echo "$stdin" \
-      | gawk -F'--' -i 'commons.gawk' -v field="${STDD__FIELD_OPTIONS[$1]}" \
+      | gawk -F'--' -i 'commons.gawk' -v field="$(stdd__get_field_index $1)" \
           '{ print c::trim($field); }')"
   echo "$field_value"
 }
