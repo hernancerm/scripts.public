@@ -29,11 +29,11 @@ function remove_items(items_to_remove, commit) {
   return commit
 }
 
-# Format an item conditionally into a normal or special style, e.g.:
+# Format an item into a normal or special style, can use ANSI escape codes. e.g.:
 # ~A_NAMEHernán C.A_NAME~ -> (italic) (cyan) Hernán C. (reset)
 #
 # @param `item_name` the name of the item to substitute with proper formatting.
-# @param `item_formatted` the proper formmating of the item. If empty, use the the actual value.
+# @param `item_formatted` the item formatted. If empty, use the the actual value.
 # @param `predicate` when true the `special_style` is used, else the `normal_style`.
 # @param `normal_style` normal style, can use ANSI escape codes.
 # @param `special_style` special style, can use ANSI escape codes.
@@ -54,6 +54,25 @@ function format_item(item_name, item_formatted, predicate, normal_style, special
   return commit
 }
 
+
+# Format an item into a style, can use ANSI escape codes. e.g.:
+# ~A_NAMEHernán C.A_NAME~ -> (cyan) Hernán C. (reset)
+#
+# @param `item_name` the name of the item to substitute with proper formatting.
+# @param `item_formatted` the item formatted. If empty, use the the actual value.
+# @param `style` style, can use ANSI escape codes.
+# @param `commit` the commit string.
+# @return the modified commit string.
+function format_item_simple(item_name, item_formatted, style, commit) {
+  if (length(item_formatted) == 0) {
+    item_formatted = "\\2"
+  }
+
+  commit = gensub("^(.*)~"item_name"(.*)"item_name"~(.*)$",
+      "\\1"style item_formatted c["reset"]"\\3", "g", commit)
+  return commit
+}
+
 BEGIN {
   c::set_colors(c)
 }
@@ -68,18 +87,22 @@ BEGIN {
   # Set special style for the hash when it identifies a merge commit (i.e. has more than one parent).
   commit = format_item("HASH", "", is_merge_commit, c["italic"] c["yellow"], c["bold"] c["yellow"], commit)
 
-  # Determie if commit is from today.
+  # Extract date parts and set formatted date.
   ad_year_4d = get_item_value("A_DATE_YEAR_4D", commit)
   ad_month_2d = get_item_value("A_DATE_MONTH_2D", commit)
   ad_month_3l = get_item_value("A_DATE_MONTH_3L", commit)
   ad_day_2d = get_item_value("A_DATE_DAY_2D", commit)
   commit = remove_items("A_DATE_YEAR A_DATE_MONTH_2D A_DATE_MONTH_3L A_DATE_DAY_2D", commit)
-  iso_8601_commit_date = ad_year_4d "-" ad_month_2d "-" ad_day_2d
-  is_commit_from_today = iso_8601_commit_date == c::get_today_date()
-
-  # Set special style for date if it is a commit from today.
   ad_formatted = ad_day_2d "/" ad_month_3l "/" substr(ad_year_4d, 3)
-  commit = format_item("A_DATE_PARTS", ad_formatted, is_commit_from_today, c["italic"] c["green"], c["bold"] c["green"], commit)
+  if (ENVIRON["LOGVO_DISABLE_DATE_SPECIAL_STYLE"] == 1) {
+    commit = format_item_simple("A_DATE_PARTS", ad_formatted, c["green"], commit)
+  } else {
+    # Determie if commit is from today.
+    iso_8601_commit_date = ad_year_4d "-" ad_month_2d "-" ad_day_2d
+    is_commit_from_today = iso_8601_commit_date == c::get_today_date()
+    # Set special style for date if it is a commit from today.
+    commit = format_item("A_DATE_PARTS", ad_formatted, is_commit_from_today, c["italic"] c["green"], c["bold"] c["green"], commit)
+  }
 
   # Determie if the author is different from the committer (either name or email).
   an = get_item_value("A_NAME", commit)

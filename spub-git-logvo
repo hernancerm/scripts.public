@@ -10,6 +10,11 @@
 #   logvo = !spub-git-logvo
 # ```
 #
+# Configuration through environment variables:
+#
+#   LOGVO_DISABLE_DATE_SPECIAL_STYLE=(0|1)
+#       Disable special formatting for the date.
+#
 # Parameters:
 # ----------
 # $*: Options for `git-log`.
