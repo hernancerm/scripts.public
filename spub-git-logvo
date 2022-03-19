@@ -17,7 +17,7 @@
 #
 # Parameters:
 # ----------
-# $*: Options for `git-log`.
+# $@: Options for `git-log`.
 #
 # Examples:
 # --------
@@ -32,6 +32,11 @@
 # $ git logvo main -10
 # ...
 # ```
+#
+# Internal notes:
+# --------------
+# For an explanation on "$@" to pass script arguments to another
+# program, see: https://unix.stackexchange.com/a/621125
 
 # `git-log` format sections.
 HASH_SECTION="\
@@ -54,7 +59,7 @@ GIT_LOG_DATE_FORMAT="\
 ~A_DATE_DAY_2D%dA_DATE_DAY_2D~"
 GIT_LOG_FORMAT="${HASH_SECTION} ${DATE_SECTION} ${AUTHOR_SECTION} ${MESSAGE_SECTION}"
 
-git log --color=always --date=format:"$GIT_LOG_DATE_FORMAT" --pretty=format:"$GIT_LOG_FORMAT" $* \
+git log --color=always --date=format:"$GIT_LOG_DATE_FORMAT" --pretty=format:"$GIT_LOG_FORMAT" "$@" \
   | gawk -f "$SPUB/utils/git-logvo.gawk" \
   | spub-git-delta-navigate
 
