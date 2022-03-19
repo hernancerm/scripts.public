@@ -52,10 +52,6 @@ PAGER_WITH_PATTERN="less -irFM --pattern \
 
 DEBUG=1
 
-function echo_sample {
-  echo -e "$SAMPLE_LINES"
-}
-
 function echo_stdin_with_sample {
   echo -e "$SAMPLE_LINES"
   while IFS='$\n' read -r line; do
@@ -70,9 +66,9 @@ function execute_pipeline {
   # Joins sample lines into a variable.
   while IFS='$\n' read -r line; do
     if [[ $current_line_number -lt $SAMPLE_SIZE ]]; then
-      SAMPLE_LINES="$SAMPLE_LINES\n$line"
+      SAMPLE_LINES="$SAMPLE_LINES$line\n"
     else
-      SAMPLE_LINES="$SAMPLE_LINES\n$line"
+      SAMPLE_LINES="$SAMPLE_LINES$line"
       further_stdin_exists=1
       break
     fi
@@ -82,35 +78,18 @@ function execute_pipeline {
   # Determine if stdin is navigable based on the sample.
   local stdin_is_navigable=$(echo -e "$SAMPLE_LINES" | grep "$GIT_DIFF_PATTERN")
 
-  # Load pattern into the pager if stdin is navigable.
-  if [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]
-  then
-    if [[ $DEBUG -eq 1 ]]; then
-      SAMPLE_LINES="YES - print sample and echo remaining lines\n${SAMPLE_LINES}"
-    fi
-    echo_stdin_with_sample \
-      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITH_PATTERN"
-  elif [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 0 ]]
-  then
-    if [[ $DEBUG -eq 1 ]]; then
-      SAMPLE_LINES="YES - print sample\n${SAMPLE_LINES}"
-    fi
-    echo_sample \
-      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITH_PATTERN"
-  elif [[ -z "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]
-  then
-    if [[ $DEBUG -eq 1 ]]; then
-      SAMPLE_LINES="NO - print sample and echo remaining lines\n${SAMPLE_LINES}"
-    fi
-    echo_stdin_with_sample \
-      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITHOUT_PATTERN"
+  # Decide if less should have a search pattern preloaded.
+  if [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]; then
+    test $DEBUG -eq 1 && SAMPLE_LINES="YES\n${SAMPLE_LINES}"
+    local pager="$PAGER_WITH_PATTERN"
   else
-    if [[ $DEBUG -eq 1 ]]; then
-      SAMPLE_LINES="NO - print sample\n${SAMPLE_LINES}"
-    fi
-    echo_sample \
-      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITHOUT_PATTERN"
+    test $DEBUG -eq 1 && SAMPLE_LINES="NO\n${SAMPLE_LINES}"
+    local pager="$PAGER_WITHOUT_PATTERN"
   fi
+
+  # Execute pipeline.
+  echo_stdin_with_sample \
+    | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$pager"
 }
 
 execute_pipeline
