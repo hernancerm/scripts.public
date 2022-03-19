@@ -1,6 +1,11 @@
 #!/bin/bash
 source "$SPUB/config/delta-default-opts.sh"
 
+# TODO:
+# - update description
+# - don't load pattern when output can be displayed in a singe screen
+# - cleanup code
+
 # Description:
 # -----------
 # Conditionally load search pattern on Delta's pager if a match can be found.
@@ -21,30 +26,92 @@ source "$SPUB/config/delta-default-opts.sh"
 # Parameters: (none).
 # ----------
 
-# Git's raw output from the command ran by user.
-STDIN=$(cat -)
+# Algorithm:
+# 1. Store the first 30 lines of stdin in a variable.
+# 2. If the whole stdin is less than or equal to 30 lines,
+#    then do steps 3-5, and instead of step 6 just echo the
+#    lines into of the variable and that's it.
+# 3. Determine if the variable's content contains any diff.
+#   a. Determine if the git-diff header is present.
+#      (git-diff header: diff --git a/file1 b/file2).
+#   b. Determie if the combined diff format is used.
+# 4. If (2) found anything, then pager used has the preloaded
+#    search pattern for diff navigation.
+# 5. If (2) did NOT find anything, then the pager has no pattern.
+# 6. Echo the 30 lines of the variable and echo every single
+#    subsequent line as soon as it's received by the script;
+#    no more analysis is done within the while loop.
 
-# Determine if the output could be navigable by Delta's navigation markers.
-NAVIGATION_PATTERN='commit [a-z0-9]{40}|Δ|•|added: |removed: '
-NAVIGATION_PATTERN_MATCHES=$(printf "$STDIN" 2> /dev/null \
-    | delta --navigate \
-    | grep -E "${NAVIGATION_PATTERN}" \
-    | gawk 'END { print NR }')
+SAMPLE_SIZE=30
+SAMPLE_LINES=''
+GIT_DIFF_PATTERN='diff --git a/.* b/.*'
 
-# Determine if the output can be entirely shown in a screen.
-VIEWABLE_IN_ONE_SCREEN=$(printf "$STDIN" 2> /dev/null \
-  | gawk -v LINES="$(tput lines)" 'END { if(NR<=LINES){print 1;}else{print 0;} }')
+PAGER_WITHOUT_PATTERN='less -irFM'
+PAGER_WITH_PATTERN="less -irFM --pattern \
+  'commit [a-z0-9]{40}|Δ|•|added: |removed: '"
 
-# The output is not navigable, or wouldn't benefit from it; don't include search pattern.
-PAGER="less -irFM"
-if [[ $NAVIGATION_PATTERN_MATCHES -eq 0 || $VIEWABLE_IN_ONE_SCREEN -gt 0 ]]; then
-  printf "$STDIN" 2> /dev/null | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER"
-  exit 0
-fi
+DEBUG=1
 
-# The output is navigable! Include search pattern.
-# (Navigate between shown files using n (next) and N (previous)).
-PAGER_WITH_PATTERN="$PAGER --pattern '$NAVIGATION_PATTERN'"
-printf "$STDIN" 2> /dev/null \
-    | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITH_PATTERN"
+function echo_sample {
+  echo -e "$SAMPLE_LINES"
+}
+
+function echo_stdin_with_sample {
+  echo -e "$SAMPLE_LINES"
+  while IFS='$\n' read -r line; do
+    echo "$line"
+  done
+}
+
+function execute_pipeline {
+  local current_line_number=1
+  local further_stdin_exists=0
+
+  # Joins sample lines into a variable.
+  while IFS='$\n' read -r line; do
+    if [[ $current_line_number -lt $SAMPLE_SIZE ]]; then
+      SAMPLE_LINES="$SAMPLE_LINES\n$line"
+    else
+      SAMPLE_LINES="$SAMPLE_LINES\n$line"
+      further_stdin_exists=1
+      break
+    fi
+    current_line_number=$(( $current_line_number + 1 ))
+  done
+
+  # Determine if stdin is navigable based on the sample.
+  local stdin_is_navigable=$(echo -e "$SAMPLE_LINES" | grep "$GIT_DIFF_PATTERN")
+
+  # Load pattern into the pager if stdin is navigable.
+  if [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]
+  then
+    if [[ $DEBUG -eq 1 ]]; then
+      SAMPLE_LINES="YES - print sample and echo remaining lines\n${SAMPLE_LINES}"
+    fi
+    echo_stdin_with_sample \
+      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITH_PATTERN"
+  elif [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 0 ]]
+  then
+    if [[ $DEBUG -eq 1 ]]; then
+      SAMPLE_LINES="YES - print sample\n${SAMPLE_LINES}"
+    fi
+    echo_sample \
+      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITH_PATTERN"
+  elif [[ -z "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]
+  then
+    if [[ $DEBUG -eq 1 ]]; then
+      SAMPLE_LINES="NO - print sample and echo remaining lines\n${SAMPLE_LINES}"
+    fi
+    echo_stdin_with_sample \
+      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITHOUT_PATTERN"
+  else
+    if [[ $DEBUG -eq 1 ]]; then
+      SAMPLE_LINES="NO - print sample\n${SAMPLE_LINES}"
+    fi
+    echo_sample \
+      | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$PAGER_WITHOUT_PATTERN"
+  fi
+}
+
+execute_pipeline
 
