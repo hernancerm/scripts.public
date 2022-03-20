@@ -22,10 +22,11 @@ source "$SPUB/config/delta-default-opts.sh"
 # ----------
 
 # Amount of lines to read from stdin used to determine if
-# loading a pattern into the pager is needed.
-SAMPLE_SIZE=30
-# Stores the joined sample lines.
-SAMPLE_LINES=''
+# loading a pattern into the pager is needed. This should
+# be set to the amount of lines of a single screen.
+SAMPLE_SIZE=$(tput lines)
+# Array storing the joined sample lines.
+SAMPLE_LINES=()
 # Pattern used to determine if loading a pattern into the
 # pager would be useful.
 GIT_DIFF_PATTERN='diff --git a/.* b/.*'
@@ -37,56 +38,49 @@ PAGER_WITH_PATTERN="less -iRXFM --pattern \
 
 # Enable debug logging.
 DEBUG_ENABLED=0
+DEBUG_LOG=''
 
-function echo_stdin_with_sample {
-  echo "$SAMPLE_LINES" | gawk '{
-    # Split properly into lines, allowing actual
-    # newline escape sequences to be in the output.
-    split($0, lines, /~@~NEWLINE~@~/)
-    # Print the lines.
-    for (line in lines) {
-      print lines[line]
-    }
-  }'
+function echo_sample_and_remaining_stdin {
+  test $DEBUG_ENABLED -eq 1 && echo "$DEBUG_LOG"
+  for i in ${!SAMPLE_LINES[@]}; do
+    echo "${SAMPLE_LINES[$i]}"
+  done
   while IFS='$\n' read -r line; do
     echo "$line"
   done
 }
 
 function execute_pipeline {
+  local sample_lines_concatenated=''
   local current_line_number=1
-  local further_stdin_exists=0
+  local eof_reached=1
 
-  # Joins sample lines into a variable.
+  # Join sample lines.
   while IFS='$\n' read -r line; do
-    if [[ $current_line_number -lt $SAMPLE_SIZE ]]; then
-      SAMPLE_LINES="$SAMPLE_LINES$line~@~NEWLINE~@~"
-    else
-      SAMPLE_LINES="$SAMPLE_LINES$line"
-      further_stdin_exists=1
+    SAMPLE_LINES+=("$line")
+    sample_lines_concatenated="$sample_lines_concatenated$line\n"
+    if [[ $current_line_number -eq $SAMPLE_SIZE ]]; then
+      eof_reached=0
       break
     fi
     current_line_number=$(( $current_line_number + 1 ))
   done
 
   # Determine if stdin is navigable based on the sample.
-  local stdin_is_navigable=$(echo -e "$SAMPLE_LINES" | grep "$GIT_DIFF_PATTERN")
+  local stdin_is_navigable=$(echo -e "$sample_lines_concatenated" \
+    | grep -E "$GIT_DIFF_PATTERN")
 
-  # Decide if less should have a search pattern preloaded.
-  if [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]; then
-    test $DEBUG_ENABLED -eq 1 && SAMPLE_LINES="YES\n${SAMPLE_LINES}"
+  # Decide if less should have a search pattern loaded.
+  if [[ -n "$stdin_is_navigable" && $eof_reached -eq 0 ]]; then
+    DEBUG_LOG='YES - stdin is navigable and would benefit from it.'
     local pager="$PAGER_WITH_PATTERN"
   else
-    test $DEBUG_ENABLED -eq 1 && SAMPLE_LINES="NO\n${SAMPLE_LINES}"
-    # Remove trailing newline if only the sample lines will be printed.
-    if [[ $further_stdin_exists -eq 0 ]]; then
-      SAMPLE_LINES=$(printf "$SAMPLE_LINES" | sed 's/~@~NEWLINE~@~$//')
-    fi
+    DEBUG_LOG='NO - stdin is not navigable or would not benefit from it.'
     local pager="$PAGER_WITHOUT_PATTERN"
   fi
 
   # Execute pipeline.
-  echo_stdin_with_sample \
+  echo_sample_and_remaining_stdin \
     | delta "${DELTA_DEFAULT_OPTS[@]}" --pager="$pager"
 }
 
