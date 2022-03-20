@@ -31,17 +31,25 @@ SAMPLE_LINES=''
 GIT_DIFF_PATTERN='diff --git a/.* b/.*'
 
 # Pager configuration.
-PAGER_WITHOUT_PATTERN='less -irFMX'
-PAGER_WITH_PATTERN="$PAGER_WITHOUT_PATTERN --pattern \
+PAGER_WITHOUT_PATTERN='less -iRXFM'
+PAGER_WITH_PATTERN="less -iRXFM --pattern \
   'commit [a-z0-9]{40}|Δ|•|added: |removed: '"
 
 # Enable debug logging.
 DEBUG_ENABLED=0
 
 function echo_stdin_with_sample {
-  printf "$SAMPLE_LINES"
+  echo "$SAMPLE_LINES" | gawk '{
+    # Split properly into lines, allowing actual
+    # newline escape sequences to be in the output.
+    split($0, lines, /~@~NEWLINE~@~/)
+    # Print the lines.
+    for (line in lines) {
+      print lines[line]
+    }
+  }'
   while IFS='$\n' read -r line; do
-    printf "$line\n"
+    echo "$line"
   done
 }
 
@@ -52,7 +60,7 @@ function execute_pipeline {
   # Joins sample lines into a variable.
   while IFS='$\n' read -r line; do
     if [[ $current_line_number -lt $SAMPLE_SIZE ]]; then
-      SAMPLE_LINES="$SAMPLE_LINES$line\n"
+      SAMPLE_LINES="$SAMPLE_LINES$line~@~NEWLINE~@~"
     else
       SAMPLE_LINES="$SAMPLE_LINES$line"
       further_stdin_exists=1
@@ -70,6 +78,10 @@ function execute_pipeline {
     local pager="$PAGER_WITH_PATTERN"
   else
     test $DEBUG_ENABLED -eq 1 && SAMPLE_LINES="NO\n${SAMPLE_LINES}"
+    # Remove trailing newline if only the sample lines will be printed.
+    if [[ $further_stdin_exists -eq 0 ]]; then
+      SAMPLE_LINES=$(printf "$SAMPLE_LINES" | sed 's/~@~NEWLINE~@~$//')
+    fi
     local pager="$PAGER_WITHOUT_PATTERN"
   fi
 
