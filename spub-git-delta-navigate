@@ -1,11 +1,6 @@
 #!/bin/bash
 source "$SPUB/config/delta-default-opts.sh"
 
-# TODO:
-# - update description
-# - don't load pattern when output can be displayed in a singe screen
-# - cleanup code
-
 # Description:
 # -----------
 # Conditionally load search pattern on Delta's pager if a match can be found.
@@ -26,31 +21,22 @@ source "$SPUB/config/delta-default-opts.sh"
 # Parameters: (none).
 # ----------
 
-# Algorithm:
-# 1. Store the first 30 lines of stdin in a variable.
-# 2. If the whole stdin is less than or equal to 30 lines,
-#    then do steps 3-5, and instead of step 6 just echo the
-#    lines into of the variable and that's it.
-# 3. Determine if the variable's content contains any diff.
-#   a. Determine if the git-diff header is present.
-#      (git-diff header: diff --git a/file1 b/file2).
-#   b. Determie if the combined diff format is used.
-# 4. If (2) found anything, then pager used has the preloaded
-#    search pattern for diff navigation.
-# 5. If (2) did NOT find anything, then the pager has no pattern.
-# 6. Echo the 30 lines of the variable and echo every single
-#    subsequent line as soon as it's received by the script;
-#    no more analysis is done within the while loop.
-
+# Amount of lines to read from stdin used to determine if
+# loading a pattern into the pager is needed.
 SAMPLE_SIZE=30
+# Stores the joined sample lines.
 SAMPLE_LINES=''
+# Pattern used to determine if loading a pattern into the
+# pager would be useful.
 GIT_DIFF_PATTERN='diff --git a/.* b/.*'
 
-PAGER_WITHOUT_PATTERN='less -irFM'
-PAGER_WITH_PATTERN="less -irFM --pattern \
+# Pager configuration.
+PAGER_WITHOUT_PATTERN='less -irFMX'
+PAGER_WITH_PATTERN="$PAGER_WITHOUT_PATTERN --pattern \
   'commit [a-z0-9]{40}|Δ|•|added: |removed: '"
 
-DEBUG=1
+# Enable debug logging.
+DEBUG_ENABLED=0
 
 function echo_stdin_with_sample {
   echo -e "$SAMPLE_LINES"
@@ -80,10 +66,10 @@ function execute_pipeline {
 
   # Decide if less should have a search pattern preloaded.
   if [[ -n "$stdin_is_navigable" && $further_stdin_exists -eq 1 ]]; then
-    test $DEBUG -eq 1 && SAMPLE_LINES="YES\n${SAMPLE_LINES}"
+    test $DEBUG_ENABLED -eq 1 && SAMPLE_LINES="YES\n${SAMPLE_LINES}"
     local pager="$PAGER_WITH_PATTERN"
   else
-    test $DEBUG -eq 1 && SAMPLE_LINES="NO\n${SAMPLE_LINES}"
+    test $DEBUG_ENABLED -eq 1 && SAMPLE_LINES="NO\n${SAMPLE_LINES}"
     local pager="$PAGER_WITHOUT_PATTERN"
   fi
 
