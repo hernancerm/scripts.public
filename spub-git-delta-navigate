@@ -1,6 +1,4 @@
 #!/bin/bash
-source "$SPUB/config/delta-default-opts.sh"
-source "$SPUB/utils/commons.sh"
 
 # Description:
 # -----------
@@ -21,6 +19,9 @@ source "$SPUB/utils/commons.sh"
 #
 # Parameters: (none).
 # ----------
+
+source "$SPUB/config/delta-default-opts.sh"
+source "$SPUB/utils/commons.sh"
 
 # Amount of lines to read from stdin used to determine if
 # loading a pattern into the pager is needed. This should

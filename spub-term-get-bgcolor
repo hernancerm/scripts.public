@@ -7,13 +7,6 @@
 #
 # Parameters: (none)
 # ----------
-#
-# Examples:
-# --------
-# ```
-# $ spub-term-get-bgcolor
-# #ffffff
-# ```
 
 printf '#ffffff'
 
