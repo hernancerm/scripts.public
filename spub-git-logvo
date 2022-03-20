@@ -10,11 +10,6 @@
 #   logvo = !spub-git-logvo
 # ```
 #
-# Configuration through environment variables:
-#
-#   LOGVO_DISABLE_DATE_SPECIAL_STYLE=(0|1)
-#       Disable special formatting for the date.
-#
 # Parameters:
 # ----------
 # $@: Options for `git-log`.
@@ -38,12 +33,10 @@
 # For an explanation on "$@" to pass script arguments to another
 # program, see: https://unix.stackexchange.com/a/621125
 
-# `git-log` format sections.
 HASH_SECTION="\
 ~HASH%hHASH~\
 ~PARENTS%pPARENTS~"
-DATE_SECTION="\
-~A_DATE_PARTS%adA_DATE_PARTS~"
+DATE_SECTION="%C(green)%ad"
 AUTHOR_SECTION="\
 ~A_NAME%anA_NAME~\
 ~C_NAME%cnC_NAME~\
@@ -51,15 +44,9 @@ AUTHOR_SECTION="\
 ~C_EMAIL%ceC_EMAIL~"
 MESSAGE_SECTION='%C(auto)%d %s'
 
-# `git-log` date and log format.
-GIT_LOG_DATE_FORMAT="\
-~A_DATE_YEAR_4D%YA_DATE_YEAR_4D~\
-~A_DATE_MONTH_2D%mA_DATE_MONTH_2D~\
-~A_DATE_MONTH_3L%bA_DATE_MONTH_3L~\
-~A_DATE_DAY_2D%dA_DATE_DAY_2D~"
 GIT_LOG_FORMAT="${HASH_SECTION} ${DATE_SECTION} ${AUTHOR_SECTION} ${MESSAGE_SECTION}"
 
-git log --color=always --date=format:"$GIT_LOG_DATE_FORMAT" --pretty=format:"$GIT_LOG_FORMAT" "$@" \
+git log --color=always --date='format:%d/%b/%Y' --pretty=format:"$GIT_LOG_FORMAT" "$@" \
   | gawk -f "$SPUB/utils/git-logvo.gawk" \
   | spub-git-delta-navigate
 
