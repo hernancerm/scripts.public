@@ -39,9 +39,9 @@ PAGER_WITH_PATTERN="$PAGER_WITHOUT_PATTERN --pattern \
 DEBUG_ENABLED=0
 
 function echo_stdin_with_sample {
-  echo -e "$SAMPLE_LINES"
+  printf "$SAMPLE_LINES"
   while IFS='$\n' read -r line; do
-    echo "$line"
+    printf "$line\n"
   done
 }
 
