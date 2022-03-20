@@ -1,5 +1,6 @@
 #!/bin/bash
 source "$SPUB/config/delta-default-opts.sh"
+source "$SPUB/utils/commons.sh"
 
 # Description:
 # -----------
@@ -29,22 +30,40 @@ SAMPLE_SIZE=$(tput lines)
 SAMPLE_LINES=()
 # Pattern used to determine if loading a pattern into the
 # pager would be useful.
-GIT_DIFF_PATTERN='diff --git a/.* b/.*'
+GIT_FULL_COMMIT_HASH_PATTERN='commit [a-z0-9]{40}'
+GIT_DIFF_HEADER_PATTERN='diff --git a/.* b/.*'
+GIT_NAVIGATION_PATTERN="\
+^$GIT_FULL_COMMIT_HASH_PATTERN|\
+^$GIT_DIFF_HEADER_PATTERN"
 
 # Pager configuration.
-PAGER_WITHOUT_PATTERN='less -iRXFM'
-PAGER_WITH_PATTERN="less -iRXFM --pattern \
-  'commit [a-z0-9]{40}|Δ|•|added: |removed: '"
+DELTA_NAVIGATION_PATTERN="\
+^$GIT_FULL_COMMIT_HASH_PATTERN|\
+^$DELTA_FILE_ADDED_LABEL|\
+^$DELTA_FILE_COPIED_LABEL|\
+^$DELTA_FILE_MODIFIED_LABEL|\
+^$DELTA_FILE_REMOVED_LABEL|\
+^$DELTA_FILE_RENAMED_LABEL|\
+^$DELTA_HUNK_LABEL"
+PAGER_NO_PATTERN="less -iRXFM -P'MDisplayed lines\: %lt-%lb'"
+PAGER_YES_PATTERN="$PAGER_NO_PATTERN -p '$DELTA_NAVIGATION_PATTERN'"
 
 # Enable debug logging.
 DEBUG_ENABLED=0
-DEBUG_LOG=''
+DEBUG_LOGS=()
 
 function echo_sample_and_remaining_stdin {
-  test $DEBUG_ENABLED -eq 1 && echo "$DEBUG_LOG"
+  # Print debug logs.
+  if [[ $DEBUG_ENABLED -eq 1 ]]; then
+    for i in ${!DEBUG_LOGS[@]}; do
+      echo "${DEBUG_LOGS[$i]}"
+    done
+  fi
+  # Print sample lines.
   for i in ${!SAMPLE_LINES[@]}; do
     echo "${SAMPLE_LINES[$i]}"
   done
+  # Print any remaining stdin.
   while IFS='$\n' read -r line; do
     echo "$line"
   done
@@ -65,19 +84,26 @@ function execute_pipeline {
     fi
     current_line_number=$(( $current_line_number + 1 ))
   done
+  sample_lines_concatenated=$(echo -e "$sample_lines_concatenated" \
+    | strip_ansi_colors)
 
   # Determine if stdin is navigable based on the sample.
   local stdin_is_navigable=$(echo -e "$sample_lines_concatenated" \
-    | grep -E "$GIT_DIFF_PATTERN")
+    | grep -E "$GIT_NAVIGATION_PATTERN")
 
   # Decide if less should have a search pattern loaded.
   if [[ -n "$stdin_is_navigable" && $eof_reached -eq 0 ]]; then
-    DEBUG_LOG='YES - stdin is navigable and would benefit from it.'
-    local pager="$PAGER_WITH_PATTERN"
+    DEBUG_LOGS+=('DEBUG: YES - stdin is navigable and would benefit from it.')
+    local pager="$PAGER_YES_PATTERN"
   else
-    DEBUG_LOG='NO - stdin is not navigable or would not benefit from it.'
-    local pager="$PAGER_WITHOUT_PATTERN"
+    DEBUG_LOGS+=('DEBUG: NO - stdin is not navigable or would not benefit from it.')
+    local pager="$PAGER_NO_PATTERN"
   fi
+
+  test $DEBUG_ENABLED -eq 1 && DEBUG_LOGS+=(\
+  'DEBUG: --- START - Sample lines ---' \
+  "$sample_lines_concatenated" \
+  'DEBUG: --- END - Sample lines ---')
 
   # Execute pipeline.
   echo_sample_and_remaining_stdin \
