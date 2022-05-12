@@ -7,7 +7,7 @@ DELTA_FILE_RENAMED_LABEL='renamed:'
 DELTA_HUNK_LABEL='•'
 
 DELTA_DEFAULT_OPTS=(\
---syntax-theme='GitHub' \
+--syntax-theme='OneHalfLight' \
 --file-style='bold blue' \
 --file-decoration-style='blue ul ol' \
 --hunk-header-style='syntax line-number' \
