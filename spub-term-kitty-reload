@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Description:
+# -----------
+# Reload the Kitty terminal to apply changes made to its config file.
+#
+# Parameters: (none)
+# ----------
+
+PLATFORM="$(spub-os-which)"
+
+if [ "$PLATFORM" = 'linux' ]; then
+    kill -SIGUSR1 $(pgrep kitty)
+fi
+if [ "$PLATFORM" = 'mac' ]; then
+    kill -SIGUSR1 $(pgrep -a kitty)
+fi
+
