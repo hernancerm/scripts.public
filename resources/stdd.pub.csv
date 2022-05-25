@@ -2,7 +2,6 @@ $SPUB              , Scripts public.          ,
 $SPRI              , Scripts private.         ,
 $DOTFILES          , Configuration files.     ,
 $TEMP              , Temporary files.         , auto_create
-$BFS               , Built from source.       , auto_create
 $HOME/Documents/Gl , Git my local-only repos. , auto_create
 $HOME/Documents/G- , Git my private repos.    , auto_create
 $HOME/Documents/G+ , Git my public repos.     , auto_create
