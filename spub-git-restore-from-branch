@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Description:
+# -----------
+# Replace files in the current working tree with the contents of files in a Git branch.
+#
+# Parameters:
+# ----------
+# $1: Git branch.
+# $2: File to replace with the contents of the same file in same path in branch $1.
+# Any additional number of files can be provided.
+#
+# Examples:
+# --------
+# Restore, in the current working tree, the file './foo.txt' from branch 'main'.
+# ```
+# $ spub-git-restore-from-branch main foo.txt
+# Redirecting 'foo.txt' in branch 'main' to current working tree.
+# ```
+
+if [ "$#" -lt 2 ]; then
+  echo "At least two arguments are required." 1>&2
+  exit 1
+fi
+
+GIT_BRANCH="$1"
+shift
+
+for _ in $(seq 1 $#); do
+  git show "$GIT_BRANCH:$1" > /dev/null
+  if [ $? -eq 0 ]; then
+    echo "Redirecting '$1' in branch '$GIT_BRANCH' to current working tree."
+    git show "$GIT_BRANCH:$1" > "$1"
+  fi
+  shift
+done
