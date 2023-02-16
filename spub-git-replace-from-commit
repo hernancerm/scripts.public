@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Description:
+# -----------
+# Replace files in the current working tree with the contents of files in a Git commit.
+#
+# Parameters:
+# ----------
+# $1: Git commit hash or something which can be resolved to a commit, e.g. a Git branch.
+# $2: File to replace with the contents of the same file in same path in commit $1.
+# Any additional number of files can be provided.
+#
+# Examples:
+# --------
+# Replace the file './foo.txt', in the current working directory, with whatever the branch 'main'
+# has in that same file path.
+# ```
+# $ spub-git-replace-from-commit main foo.txt
+# Redirecting 'foo.txt' in commit 'main' to current working tree.
+# ```
+
+if [ "$#" -lt 2 ]; then
+  echo "At least two arguments are required." 1>&2
+  exit 1
+fi
+
+GIT_COMMIT="$1"
+shift
+
+for _ in $(seq 1 $#); do
+  if git show "$GIT_COMMIT:$1" > /dev/null; then
+    echo "Redirecting '$1' in commit '$GIT_COMMIT' to current working tree."
+    git show "$GIT_COMMIT:$1" > "$1"
+  fi
+  shift
+done
