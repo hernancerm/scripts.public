@@ -1,0 +1,32 @@
+#!/usr/bin/env Rscript
+# vim: filetype=R
+
+# Description:
+# -----------
+# Generate basic statistics from a file whith a single number per line.
+# Dependencies: R and `column` shell command.
+#
+# Parameters:
+# ----------
+# stdin: Path to the file which has a single number per line.
+#
+# Examples:
+# --------
+# $ spub-generate-summary-stats < data.txt
+# N    min  mean      median  percentile_95  percentile_99  max
+# 503  47   384.6839  450     675.9          746.82         1032
+
+# Build a numeric vector.
+x <- as.numeric(readLines("stdin"))
+
+# Custom basic statistics.
+basic_stats <- data.frame(
+    N = length(x), min = min(x), mean = mean(x), median = median(x),
+    percentile_95 = quantile(x, c(.95)), percentile_99 = quantile(x, c(.99)),
+    max = max(x))
+
+# Print output. Use temp file so tabular formatting is done by the `column` command.
+temp_file_name <- paste("basic_stats_", sample(1000000:9000000, 1), ".csv", sep = "")
+write.csv(round(basic_stats, 4), file = temp_file_name, row.names = FALSE, quote = FALSE)
+system(paste("column -s, -t", temp_file_name))
+invisible(file.remove(temp_file_name))
