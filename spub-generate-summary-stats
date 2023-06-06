@@ -25,8 +25,8 @@ basic_stats <- data.frame(
     percentile_95 = quantile(x, c(.95)), percentile_99 = quantile(x, c(.99)),
     max = max(x))
 
-# Print output. Use temp file so tabular formatting is done by the `column` command.
-temp_file_name <- paste("basic_stats_", sample(1000000:9000000, 1), ".csv", sep = "")
-write.csv(round(basic_stats, 4), file = temp_file_name, row.names = FALSE, quote = FALSE)
-system(paste("column -s, -t", temp_file_name))
-invisible(file.remove(temp_file_name))
+# Print output. Tabular formatting is done by the `column` command.
+temp_file <- tempfile("basic_stats_", fileext = ".csv")
+write.csv(round(basic_stats, 4), file = temp_file, row.names = FALSE, quote = FALSE)
+system(paste("column -s, -t", temp_file))
+. <- file.remove(temp_file)
