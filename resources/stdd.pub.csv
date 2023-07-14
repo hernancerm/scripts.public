@@ -1,7 +1,7 @@
-$DOTFILES , Configuration files.        ,
-$SPUB     , Scripts public.             ,
-$SPRI     , Scripts private.            ,
-$TEMP     , Temporary files.            , auto_create
-$GL       , Git my local-only repos.    , auto_create
-$GR       , Git my remote-backed repos. , auto_create
-$GC       , Git cloned repos, not mine. , auto_create
+$DOTFILES   , Configuration files.        ,
+$SPUB       , Scripts public.             ,
+$SPRI       , Scripts private.            ,
+$TEMP       , Temporary files.            , auto_create
+$GIT_LOCAL  , Git my local-only repos.    , auto_create
+$GIT_REMOTE , Git my remote-backed repos. , auto_create
+$GIT_CLONED , Git cloned repos, not mine. , auto_create
