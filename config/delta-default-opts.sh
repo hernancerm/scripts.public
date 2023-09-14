@@ -12,7 +12,7 @@ DELTA_DEFAULT_OPTS=(\
 --file-decoration-style='blue ul ol' \
 --hunk-header-style='syntax line-number' \
 --hunk-header-decoration-style='gray box' \
---max-line-length=3500 \
+--max-line-length=6500 \
 --navigate \
 --file-added-label="$DELTA_FILE_ADDED_LABEL" \
 --file-copied-label="$DELTA_FILE_COPIED_LABEL" \
