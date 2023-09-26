@@ -4,7 +4,7 @@
 # Description:
 # -----------
 # Generate basic statistics from a file whith a single number per line.
-# Dependencies: R and `column` shell command.
+# Dependencies: R and the `column` shell command.
 #
 # Parameters:
 # ----------
@@ -12,7 +12,7 @@
 #
 # Examples:
 # --------
-# $ spub-generate-summary-stats < data.txt
+# $ spub-stats-generate-summary < data.txt
 # N    min  mean      median  percentile_95  percentile_99  max
 # 503  47   384.6839  450     675.9          746.82         1032
 
