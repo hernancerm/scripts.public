@@ -14,6 +14,7 @@
 #     - decorator (string): Prefix of the {path} in the pretty print output. Must be a single char.
 #                           Default value: A single whitespace character.
 #     - create (boolean): Whether to create the directories on `stdd_create_directories`.
+#     - expand (boolean): Whether to list all level-1 subdirectories in the pretty print.
 
 STDD_PUBLIC_FILEPATH='$SPUB/resources/stdd.pub.csv'
 STDD_PRIVATE_FILEPATH='$SPRI/resources/stdd.pri.csv'
@@ -57,15 +58,32 @@ function stdd_get_field_from_raw {
   echo "$field_value"
 }
 
+# TODO: Fix expansion happens for all dirs, not just `expand` marked.
+# TODO: Abbreviate `/Users/hernancervera` with `~`.
+# TODO: Do not shift order when pressing `*`.
 # Pretty print the provided lines of raw standard directories.
 #
 # @stdin valid raw line(s) of standard directory(ies).
 # @return pretty-printed standard directories.
 function stdd_pretty_print {
   local stdin="$(cat -)"
-  filtered_field_values="$(echo "$stdin" | gawk -F',' -i 'stdd.gawk' -v metadata="3" '{ \
-      print stdd::get_metadata_value($metadata, "decorator")$1", --"$2 }')"
-  echo "$filtered_field_values" | column -ts ','
+  stdds_columnar_with_metadata="$(echo "$stdin" | gawk -F',' -i 'stdd.gawk' -v metadata="3" '{ \
+        print stdd::get_metadata_value($metadata, "decorator")$1", --"$2" metadata: "$3 }' \
+      | column -ts ',')"
+  echo "$(echo "$stdds_columnar_with_metadata" | gawk -i 'commons.gawk' -i 'stdd.gawk' '{ \
+        # Print the pretty stdd.
+        print(gensub(/[ ]*metadata:.*$/, "", "g", $0))
+        # Store raw metadata in a variable.
+        metadata = gensub(/^.*metadata:[ ]*/, "", "g", $0)
+        # Extract `expand` metadata item.
+        expand = stdd::get_metadata_value(metadata, "expand")
+        # Extract `path` field.
+        path = substr(c::trim(gensub(/ -- .*/, "", "g", $0)), 2)
+        # Conditionally expand the stdd.
+        if (expand == "true" ) {
+          system("ls -d1 "path"/* | xargs realpath | xargs printf \" %s\\n\"")
+        }
+      }')"
 }
 
 # @stdin prettified line(s) of standard directory(ies).
