@@ -1,6 +1,6 @@
-~/dev/gc       , Git cloned repos, not mine.      , auto_create
-~/dev/gr       , Git my remote-backed repos.      , auto_create
-~/dev/spri     , Scripts public.                  ,
-~/dev/spub     , Scripts private.                 ,
-~/dev/temp     , Temporary files.                 , auto_create
-~/.dotfiles    , Configuration files.             ,
+~/dev/gc       , Git cloned repos not mine.     , decorator:* auto_create
+~/dev/gr       , Git my remote-backed repos.    , decorator:* auto_create
+~/dev/spri     , Scripts public.                , decorator:*
+~/dev/spub     , Scripts private.               , decorator:*
+~/dev/temp     , Temporary files.               , decorator:* auto_create
+~/.dotfiles    , Configuration files.           , decorator:*
