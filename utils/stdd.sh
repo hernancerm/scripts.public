@@ -13,7 +13,7 @@
 #     assumed value is `false`. Metadata items:
 #     - decorator (string): Prefix of the {path} in the pretty print output. Must be a single char.
 #                           Default value: A single whitespace character.
-#     - auto_create (boolean): Whether to create the directories on `stdd_create_directories`.
+#     - create (boolean): Whether to create the directories on `stdd_create_directories`.
 
 STDD_PUBLIC_FILEPATH='$SPUB/resources/stdd.pub.csv'
 STDD_PRIVATE_FILEPATH='$SPRI/resources/stdd.pri.csv'
@@ -81,7 +81,7 @@ function stdd_get_field_from_pretty {
 }
 
 # Create, if not already existent, the directories that are marked with the
-# metadata value of `auto_create`.
+# metadata value of `create`.
 #
 # @stdin valid raw line(s) of raw standard directory(ies).
 function stdd_create_directories {
@@ -92,7 +92,8 @@ function stdd_create_directories {
     local stdd_path="$(echo "$stdd" | stdd_get_field_from_raw 'path')"
     local stdd_metadata="$(echo "$stdd" | stdd_get_field_from_raw 'metadata')"
 
-    if [[ "$stdd_metadata" =~ auto_create ]]; then
+    if [[ "$stdd_metadata" =~ create ]]; then
+      echo "Beginning creation of directory: ${stdd_path}"
       local stdd_path_expanded="$(eval echo $stdd_path)"
       mkdir -vp "$stdd_path_expanded"
     fi
