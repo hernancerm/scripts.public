@@ -63,7 +63,8 @@ function stdd_get_field_from_raw {
 # @return pretty-printed standard directories.
 function stdd_pretty_print {
   local stdin="$(cat -)"
-  filtered_field_values="$(echo "$stdin" | gawk -F',' -i 'stdd.gawk' -v metadata="3" '{ print stdd::get_metadata_value($metadata, "decorator")$1", --"$2 }')"
+  filtered_field_values="$(echo "$stdin" | gawk -F',' -i 'stdd.gawk' -v metadata="3" '{ \
+      print stdd::get_metadata_value($metadata, "decorator")$1", --"$2 }')"
   echo "$filtered_field_values" | column -ts ','
 }
 
