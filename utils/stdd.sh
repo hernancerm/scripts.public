@@ -58,7 +58,6 @@ function stdd_get_field_from_raw {
   echo "$field_value"
 }
 
-# TODO: Abbreviate `/Users/hernancervera` with `~`.
 # TODO: Do not shift order when pressing `*`.
 # Pretty print the provided lines of raw standard directories.
 #
@@ -81,7 +80,7 @@ function stdd_pretty_print {
         # Conditionally expand the stdd.
         if (expand == "true" ) {
           system("find "path" -maxdepth 1 -type d \
-              | sed \"1d\" | xargs realpath | xargs printf \" %s\\n\"")
+              | sed \"1d\" | xargs realpath | sed \"s#$HOME#~#\" | xargs printf \" %s\\n\"")
         }
       }')"
 }
