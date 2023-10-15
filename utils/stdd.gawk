@@ -7,7 +7,10 @@
 # @param metadata raw metadata from a single raw stdd.
 # @param item metadata item name.
 # @return `item`'s value.
-function get_metadata_value(metadata, target_item) {
+function get_metadata_value(metadata, target_item,
+      # Local variables:
+      metadata_array, metadata_array_item, decorator_item, expand_item,
+      decorator_item_value, decorator_item_value_normalized, expand_item_value_normalized) {
   # Step 1: Split `metadata` in an array.
   split(metadata, metadata_array, /[ ]/)
   for (i in metadata_array) {
@@ -15,8 +18,7 @@ function get_metadata_value(metadata, target_item) {
     if (match(metadata_array_item, /^decorator/)) {
       # Step 2.1: Store in a variable the `decorator` item.
       decorator_item = metadata_array_item
-    }
-    if (match(metadata_array_item, /^expand/)) {
+    } else if (match(metadata_array_item, /^expand/)) {
       # Step 2.2: Store in a variable the `expand` item.
       expand_item = metadata_array_item
     }
@@ -38,8 +40,7 @@ function get_metadata_value(metadata, target_item) {
   # Step 5: Return the requested metadata item.
   if (target_item == "decorator") {
     return decorator_item_value_normalized
-  }
-  if (target_item == "expand") {
+  } else if (target_item == "expand") {
     return expand_item_value_normalized
   }
 }

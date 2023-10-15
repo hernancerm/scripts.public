@@ -58,7 +58,6 @@ function stdd_get_field_from_raw {
   echo "$field_value"
 }
 
-# TODO: Fix expansion happens for all dirs, not just `expand` marked.
 # TODO: Abbreviate `/Users/hernancervera` with `~`.
 # TODO: Do not shift order when pressing `*`.
 # Pretty print the provided lines of raw standard directories.
