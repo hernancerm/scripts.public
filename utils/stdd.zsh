@@ -1,18 +1,17 @@
 #!/bin/zsh
 
-# Manipulate "standard directories". These are directories which are
-# standard to my setup, and I commonly visit them. They are defined
-# in a CSV file.
+# Manipulate "standard directories". These are directories which are standard to my setup,
+# and I commonly visit them. They are defined in a CSV file.
 
 # CSV configuration file format:
 # {path}, {description}, {metadata}
 #
 # {metadata}:
-#     The items are separated by a space. Each item can have a value after a colon. If an item does
-#     not have a colon then the assumed value is to be `true`. If the item is not present then the
-#     assumed value is `false`. Metadata items:
-#     - decorator (string): Prefix of the {path} in the pretty print output. Must be a single char.
-#                           Default value: A single whitespace character.
+#     The items are separated by a space. Each item can have a value after a colon. If an
+#     item does not have a colon then the assumed value is to be `true`. If the item is
+#     not present then the assumed value is `false`. Metadata items:
+#     - decorator (string): Prefix of the {path} in the pretty print output. Must be a
+#                           single char. Default value: A single whitespace character.
 #     - create (boolean): Whether to create the directories on `stdd_create_directories`.
 #     - expand (boolean): Whether to list all level-1 subdirectories in the pretty print.
 
@@ -64,10 +63,12 @@ function stdd_get_field_from_raw {
 # @return pretty-printed standard directories.
 function stdd_pretty_print {
   local stdin="$(cat -)"
-  stdds_columnar_with_metadata="$(echo "$stdin" | gawk -F',' -i 'stdd.gawk' -v metadata="3" '{ \
-        print stdd::get_metadata_value($metadata, "decorator")$1", --"$2" metadata: "$3 }' \
-      | column -ts ',')"
-  echo "$(echo "$stdds_columnar_with_metadata" | gawk -i 'commons.gawk' -i 'stdd.gawk' '{ \
+  stdds_pretty_with_metadata="$(echo "$stdin" | \
+          gawk -F',' -i 'stdd.gawk' -v metadata="3" '{ \
+              print stdd::get_metadata_value($metadata, "decorator") \
+                  $1", --"$2" metadata: "$3 }' | column -ts ',')"
+  # TODO: Move long inline-gawk script to stdd.gawk.
+  echo "$(echo "$stdds_pretty_with_metadata" | gawk -i 'commons.gawk' -i 'stdd.gawk' '{
         # Print the pretty stdd.
         print(gensub(/[ ]*metadata:.*$/, "", "g", $0))
         # Store raw metadata in a variable.
@@ -78,8 +79,8 @@ function stdd_pretty_print {
         path = substr(c::trim(gensub(/ -- .*/, "", "g", $0)), 2)
         # Conditionally expand the stdd.
         if (expand == "true" ) {
-          system("find "path" -maxdepth 1 -type d \
-              | sed \"1d\" | xargs realpath | sed \"s#$HOME#~#\" | xargs printf \" %s\\n\"")
+          system("find "path" -maxdepth 1 -type d | sed \"1d\" | xargs realpath \
+              | sed \"s#$HOME#~#\" | xargs printf \" %s\\n\"")
         }
       }')"
 }
@@ -116,3 +117,5 @@ function stdd_create_directories {
 
   done <<< "$stdin"
 }
+
+# vim: textwidth=90
