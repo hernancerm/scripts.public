@@ -80,7 +80,8 @@ function stdd_pretty_print {
         path = substr(c::trim(gensub(/ -- .*/, "", "g", $0)), 2)
         # Conditionally expand the stdd.
         if (expand == "true" ) {
-          system("ls -d1 "path"/* | xargs realpath | xargs printf \" %s\\n\"")
+          system("find "path" -maxdepth 1 -type d \
+              | sed \"1d\" | xargs realpath | xargs printf \" %s\\n\"")
         }
       }')"
 }
