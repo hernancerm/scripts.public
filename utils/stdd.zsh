@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Manipulate "standard directories". These are directories which are
 # standard to my setup, and I commonly visit them. They are defined
