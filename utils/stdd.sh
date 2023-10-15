@@ -58,7 +58,6 @@ function stdd_get_field_from_raw {
   echo "$field_value"
 }
 
-# TODO: Do not shift order when pressing `*`.
 # Pretty print the provided lines of raw standard directories.
 #
 # @stdin valid raw line(s) of standard directory(ies).
