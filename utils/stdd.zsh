@@ -50,8 +50,8 @@ function stdd_get_all_raw {
 # @param $1 name of field to retrieve: `path`, `description` or `metadata`.
 # @return the trimmed value of the field.
 function stdd_get_field_from_raw {
-  gawk -F',' -i 'commons.gawk' -v field="$(stdd_get_field_index $1)" '{
-    print c::trim($field) }'
+  gawk -F',' -i 'commons.gawk' -v field_index="$(stdd_get_field_index $1)" '{
+    print c::trim($field_index) }'
 }
 
 # Pretty print the provided lines of raw standard directories.
