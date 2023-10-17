@@ -30,6 +30,15 @@ function get_metadata_value(metadata, target_item,
   return _target_item_value
 }
 
+function create_directories(path, metadata, _stdd_path_expanded) {
+  if (stdd::get_metadata_value(metadata, "create") == "true") {
+    "eval echo "path | getline _stdd_path_expanded
+    print("Beginning creation of directory: "_stdd_path_expanded)
+    system("mkdir -vp "_stdd_path_expanded)
+    close("eval echo "path)
+  }
+}
+
 function _toTrueFalse(boolean) {
   return boolean ? "true" : "false"
 }

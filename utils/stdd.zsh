@@ -97,25 +97,13 @@ function stdd_get_field_from_pretty {
   echo "$field_value"
 }
 
-# Create, if not already existent, the directories that are marked with the
-# metadata value of `create`.
+# Create the directories marked with the metadata item `create`.
 #
-# @stdin valid raw line(s) of raw standard directory(ies).
+# @stdin lines of raw stdds.
 function stdd_create_directories {
-  local stdin="$(cat -)"
-
-  local stdd
-  while IFS='' read -r stdd; do
-    local stdd_path="$(echo "$stdd" | stdd_get_field_from_raw 'path')"
-    local stdd_metadata="$(echo "$stdd" | stdd_get_field_from_raw 'metadata')"
-
-    if [[ "$stdd_metadata" =~ create ]]; then
-      echo "Beginning creation of directory: ${stdd_path}"
-      local stdd_path_expanded="$(eval echo $stdd_path)"
-      mkdir -vp "$stdd_path_expanded"
-    fi
-
-  done <<< "$stdin"
+  gawk -i stdd.gawk -F, -v path=1 -v metadata=3 '{
+    stdd::create_directories($path, $metadata)
+  }'
 }
 
 # vim: textwidth=90
