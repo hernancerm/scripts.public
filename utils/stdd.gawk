@@ -1,46 +1,35 @@
 @namespace "stdd"
 
-# TODO: Refactor the logic of "extracting a boolean" and "extracting a string".
-# WARNING: Currenlty this function only supports `item` equal to `"decorator"` and `"expand"`.
-#          It is assumed that a decorator will always be present and have a colon.
-#
-# @param metadata raw metadata from a single raw stdd.
-# @param item metadata item name.
-# @return `item`'s value.
+function get_metadata_value_string(metadata_item) {
+  if (metadata_item == "") { return metadata_item }
+  return awk::gensub(/\w+:/, "", "g", metadata_item)
+}
+
+function get_metadata_value_boolean(metadata_item) {
+  return _toTrueFalse(metadata_item != "")
+}
+
 function get_metadata_value(metadata, target_item,
-      # Local variables:
-      metadata_array, metadata_array_item, decorator_item, expand_item,
-      decorator_item_value, decorator_item_value_normalized, expand_item_value_normalized) {
-  # Step 1: Split `metadata` in an array.
-  split(metadata, metadata_array, /[ ]/)
-  for (i in metadata_array) {
-    metadata_array_item = metadata_array[i]
-    if (match(metadata_array_item, /^decorator/)) {
-      # Step 2.1: Store in a variable the `decorator` item.
-      decorator_item = metadata_array_item
-    } else if (match(metadata_array_item, /^expand/)) {
-      # Step 2.2: Store in a variable the `expand` item.
-      expand_item = metadata_array_item
+      _metadata_array, _target_item_extracted, _target_item_value) {
+  split(metadata, _metadata_array, /[ ]/)
+  for (i in _metadata_array) {
+    if (_metadata_array[i] ~ "^"target_item) {
+      _target_item_extracted = _metadata_array[i]
+      break
     }
   }
-  # Step 3: Retrieve the value of the `decorator` item.
-  decorator_item_value = awk::gensub(/decorator:/, "", "g", decorator_item)
-  # Step 4.1: Normalize the `decorator` item value.
-  if (length(decorator_item_value) == 0) {
-    decorator_item_value_normalized = " "
+  if (_target_item_extracted ~ ":") {
+    _target_item_value = get_metadata_value_string(_target_item_extracted)
   } else {
-    decorator_item_value_normalized = decorator_item_value
+    _target_item_value = get_metadata_value_boolean(_target_item_extracted)
   }
-  # Step 4.2: Normalize the `expand` item value.
-  if (length(expand_item) == 0) {
-    expand_item_value_normalized = "false"
-  } else {
-    expand_item_value_normalized = "true"
+  if (target_item == "decorator" \
+        && (length(_target_item_value) > 1 || _target_item_value == "")) {
+    _target_item_value = " "
   }
-  # Step 5: Return the requested metadata item.
-  if (target_item == "decorator") {
-    return decorator_item_value_normalized
-  } else if (target_item == "expand") {
-    return expand_item_value_normalized
-  }
+  return _target_item_value
+}
+
+function _toTrueFalse(boolean) {
+  return boolean ? "true" : "false"
 }
