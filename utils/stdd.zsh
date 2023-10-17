@@ -82,16 +82,14 @@ function stdd_pretty_print {
       }')"
 }
 
-# @stdin prettified line(s) of standard directory(ies).
+# @stdin prettified lines of stdds.
 # @param $1 name of field to retrieve: `path` or `description`.
 # @return the trimmed value of the field.
 function stdd_get_field_from_pretty {
-  local stdin="$(cat -)"
-  local pretty_without_decorator="$(echo "$stdin" | gawk '{ print substr($0, 2) }')"
-  local field_value="$(echo "$pretty_without_decorator" \
-      | gawk -F'--' -i 'commons.gawk' -v field="$(stdd_get_field_index $1)" \
-          '{ print c::trim($field); }')"
-  echo "$field_value"
+  gawk -i commons.gawk -v field_index="$(stdd_get_field_index $1)" '{
+    split($0, fields_array, /\-\-/)
+    print(c::trim(substr(fields_array[field_index], 2)))
+  }'
 }
 
 # Create the directories marked with the metadata item `create`.
