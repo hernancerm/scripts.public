@@ -46,15 +46,12 @@ function stdd_get_all_raw {
   stdd_get_pri_raw
 }
 
-# @stdin valid raw line(s) of standard directory(ies).
+# @stdin raw line of stdds.
 # @param $1 name of field to retrieve: `path`, `description` or `metadata`.
 # @return the trimmed value of the field.
 function stdd_get_field_from_raw {
-  local stdin="$(cat -)"
-  local field_value="$(echo "$stdin" \
-      | gawk -F',' -i 'commons.gawk' -v field="$(stdd_get_field_index $1)" \
-          '{ print c::trim($field); }')"
-  echo "$field_value"
+  gawk -F',' -i 'commons.gawk' -v field="$(stdd_get_field_index $1)" '{
+    print c::trim($field) }'
 }
 
 # Pretty print the provided lines of raw standard directories.
