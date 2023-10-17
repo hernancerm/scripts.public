@@ -12,7 +12,6 @@
 #     not present then the assumed value is `false`. Metadata items:
 #     - decorator (string): Prefix of the {path} in the pretty print output. Must be a
 #                           single char. Default value: A single whitespace character.
-#     - create (boolean): Whether to create the directories on `stdd_create_directories`.
 #     - expand (boolean): Whether to list all level-1 subdirectories in the pretty print.
 
 STDD_PUBLIC_FILEPATH='$SPUB/resources/stdd.pub.csv'
@@ -89,15 +88,6 @@ function stdd_get_field_from_pretty {
   gawk -i commons.gawk -v field_index="$(stdd_get_field_index $1)" '{
     split($0, fields_array, /\-\-/)
     print(c::trim(substr(fields_array[field_index], 2)))
-  }'
-}
-
-# Create the directories marked with the metadata item `create`.
-#
-# @stdin lines of raw stdds.
-function stdd_create_directories {
-  gawk -i stdd.gawk -F, -v path=1 -v metadata=3 '{
-    stdd::create_directories($path, $metadata)
   }'
 }
 

@@ -1,6 +1,6 @@
-~/dev/gc       , Git cloned repos not mine.     , decorator:* expand create
-~/dev/gr       , Git my remote-backed repos.    , decorator:* expand create
+~/dev/gc       , Git cloned repos not mine.     , decorator:* expand
+~/dev/gr       , Git my remote-backed repos.    , decorator:* expand
 ~/dev/spub     , Scripts public.                , decorator:*
 ~/dev/spri     , Scripts private.               , decorator:*
-~/dev/temp     , Temporary files.               , decorator:* create
+~/dev/temp     , Temporary files.               , decorator:*
 ~/.dotfiles    , Configuration files.           , decorator:*
