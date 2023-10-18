@@ -49,8 +49,8 @@ function stdd_get_all_raw {
 # @param $1 name of field to retrieve: `path`, `description` or `metadata`.
 # @return the trimmed value of the field.
 function stdd_get_field_from_raw {
-  gawk -F',' -i 'commons.gawk' -v field_index="$(stdd_get_field_index $1)" '{
-    print c::trim($field_index) }'
+  gawk -F',' -i stdd.gawk -v field_index="$(stdd_get_field_index $1)" '{
+    print stdd::trim($field_index) }'
 }
 
 # Pretty print the provided lines of raw standard directories.
@@ -64,7 +64,7 @@ function stdd_pretty_print {
               print stdd::get_metadata_value($metadata, "decorator") \
                   $1", --"$2" metadata: "$3 }' | column -ts ',')"
   # TODO: Move long inline-gawk script to stdd.gawk.
-  echo "$(echo "$stdds_pretty_with_metadata" | gawk -i 'commons.gawk' -i 'stdd.gawk' '{
+  echo "$(echo "$stdds_pretty_with_metadata" | gawk -i 'stdd.gawk' '{
         # Print the pretty stdd.
         print(gensub(/[ ]*metadata:.*$/, "", "g", $0))
         # Store raw metadata in a variable.
@@ -72,7 +72,7 @@ function stdd_pretty_print {
         # Extract `expand` metadata item.
         expand = stdd::get_metadata_value(metadata, "expand")
         # Extract `path` field.
-        path = substr(c::trim(gensub(/ -- .*/, "", "g", $0)), 2)
+        path = substr(stdd::trim(gensub(/ -- .*/, "", "g", $0)), 2)
         # Conditionally expand the stdd.
         if (expand == "true" ) {
           system("find "path" -maxdepth 1 -type d | sed \"1d\" | xargs realpath \
@@ -85,9 +85,9 @@ function stdd_pretty_print {
 # @param $1 name of field to retrieve: `path` or `description`.
 # @return the trimmed value of the field.
 function stdd_get_field_from_pretty {
-  gawk -i commons.gawk -v field_index="$(stdd_get_field_index $1)" '{
+  gawk -i stdd.gawk -v field_index="$(stdd_get_field_index $1)" '{
     split($0, fields_array, /\-\-/)
-    print(c::trim(substr(fields_array[field_index], 2)))
+    print(stdd::trim(substr(fields_array[field_index], 2)))
   }'
 }
 

@@ -30,6 +30,10 @@ function get_metadata_value(metadata, target_item,
   return _target_item_value
 }
 
+function trim(string) {
+  return awk::gensub(/^\s+|\s+$/, "", "g", string);
+}
+
 function _toTrueFalse(boolean) {
   return boolean ? "true" : "false"
 }
