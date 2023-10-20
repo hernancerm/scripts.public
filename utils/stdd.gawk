@@ -38,7 +38,7 @@ function pretty_print(raw_stdd, longest_path_length,
   _path_padded = _path_trimmed \
       _repeatSymbol(" ", longest_path_length - length(_path_trimmed)) \
       _repeatSymbol(" ", 4)
-  _description_formatted = "--" _raw_stdd_array[2]
+  _description_formatted = "--" trim(_raw_stdd_array[2])
   # Print standard directory.
   printf("%s%s%s\n", _decorator, _path_padded, _description_formatted)
   # Print expanded directories.
