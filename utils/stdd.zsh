@@ -14,8 +14,7 @@
 #                           single char. Default value: A single whitespace character.
 #     - expand (boolean): Whether to list all level-1 subdirectories in the pretty print.
 
-STDD_PUBLIC_FILEPATH='$SPUB/resources/stdd.pub.csv'
-STDD_PRIVATE_FILEPATH='$SPRI/resources/stdd.pri.csv'
+STDD_CONFIG_HOME=${XDG_CONFIG_HOME:-'~/.config/stdd'}
 
 # @param $1 field name, options: 'path', 'description', 'metadata'.
 function stdd_get_field_index {
@@ -28,21 +27,31 @@ function stdd_get_field_index {
   echo $index
 }
 
-# @return string public standard directories as-are, no transormations applied to file.
-function stdd_get_pub_raw {
-  cat "$(eval echo $STDD_PUBLIC_FILEPATH)"
+# @return string standard directories as-are, no transormations applied to contents.
+#         It is required to have this file.
+function stdd_get_raw_directories {
+  local stdd_filepath=$(eval echo "$STDD_CONFIG_HOME/directories.csv")
+  if ! [[ -f "$stdd_filepath" ]]; then
+    echo "Missing configuration file: "$stdd_filepath"" 1>&2
+    return 1
+  fi
+  cat "$stdd_filepath"
 }
 
-# @return string private standard directories as-are, no transormations applied to file.
-function stdd_get_pri_raw {
-  cat "$(eval echo $STDD_PRIVATE_FILEPATH)"
+# @return string local standard directories as-are, no transormations applied to contents.
+#         It is not required to have this file.
+function stdd_get_raw_directories_local {
+  local stdd_filepath_local=$(eval echo "$STDD_CONFIG_HOME/directories_local.csv")
+  if [[ -f "$stdd_filepath_local" ]]; then
+    cat "$stdd_filepath_local"
+  fi
 }
 
 # @return string all standard directories as-are, no transormations applied to the files.
 #         (the public directories are listed first, then the private ones).
-function stdd_get_all_raw {
-  stdd_get_pub_raw
-  stdd_get_pri_raw
+function stdd_get_raw_directories_all {
+  stdd_get_raw_directories
+  stdd_get_raw_directories_local
 }
 
 # @stdin raw lines of stdds.
