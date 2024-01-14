@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+
+# Notes
+# - This scripts relies on nvim setting the kitty window title to `nvim {nvim-cwd}`.
+
+kitty @ ls --match-tab 'status:active' \
+    | jq -r 'foreach .[].tabs.[].windows.[] as $window
+        (0; .; ($window.id | tostring) + "*" +
+            $window.foreground_processes.[0].cmdline.[0] + "*" +
+            $window.foreground_processes.[0].cwd + "*" +
+            $window.title)' \
+    | gawk -F'*' '{
+          if ($2 == "nvim") {
+            print($1 "*" gensub(/\s/, "*", "1", $4))
+          } else {
+            print $1 "*" $2 "*" $3
+          }
+      }' \
+    | column -s'*' -t \
+    | fzf \
+    | gawk '{ system("kitty @ focus-window --match id:" $1) }'
