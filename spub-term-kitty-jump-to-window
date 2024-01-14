@@ -1,19 +1,34 @@
-#!/usr/bin/env zsh
+#!/bin/bash
 
-# Notes
-# - This scripts relies on nvim setting the kitty window title to `nvim {nvim-cwd}`.
+# Description:
+# ---
+# List in fzf the kitty windows from the active tab. On selection, focus the window. Special cases:
+# - When the command is nvim: The cwd is the cwd of nvim, not the cwd of the Kitty window.
+# - Do not list the current kitty window.
+#
+# Parameters
+# ---
+# None.
+#
+# Dependencies
+# ---
+# - Neovim must set the kitty window title to `nvim {nvim-cwd}`. Notice that `{nvim-cwd}` might
+#   differ from the cwd of the kitty window itself.
 
 kitty @ ls --match-tab 'status:active' \
     | jq -r 'foreach .[].tabs.[].windows.[] as $window
         (0; .; ($window.id | tostring) + "*" +
             $window.foreground_processes.[0].cmdline.[0] + "*" +
             $window.foreground_processes.[0].cwd + "*" +
+            ($window.is_self | tostring) + "*" +
             $window.title)' \
     | gawk -F'*' '{
           if ($2 == "nvim") {
-            print($1 "*" gensub(/\s/, "*", "1", $4))
-          } else {
-            print $1 "*" $2 "*" $3
+            # When command is `nvim`, use the cwd from the window title.
+            print($1 "*" gensub(/\s/, "*", "1", $5))
+          } else if ($4 == "false") {
+            # Print all remaining non-self windows (exclude overlay).
+            print($1 "*" $2 "*" $3)
           }
       }' \
     | column -s'*' -t \
