@@ -1,3 +1,12 @@
 #!/bin/sh
 
-nvim -c ":Man $1|only"
+# = Description
+# Open a man page in Neovim with an outline.
+#
+# = Parameters
+# $1: Program, e.g. `gawk`.
+#
+# = Examples
+# `spub-nvim-man gawk`
+
+nvim -c "vnew|Man $1|only|execute \"normal gO\\<C-w>L\\<C-w><\\<C-w>w\""
