@@ -15,7 +15,7 @@
 # - Neovim must set the kitty window title to `nvim {nvim-cwd}`. Notice that `{nvim-cwd}` might
 #   differ from the cwd of the kitty window itself.
 
-kitty @ ls --match-tab 'status:active' \
+kitty @ ls --match-tab 'state:active' \
     | jq -r 'foreach .[].tabs.[].windows.[] as $window
         (0; .; ($window.id | tostring) + "*" +
             $window.foreground_processes.[0].cmdline.[0] + "*" +
