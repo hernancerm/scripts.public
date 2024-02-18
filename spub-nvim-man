@@ -9,4 +9,5 @@
 # = Examples
 # `spub-nvim-man gawk`
 
-nvim -c "vnew|Man $1|only|execute \"normal gO\\<C-w>L\\<C-w><\\<C-w>w\""
+norm_show_outline='"normal gO\<C-w>L\<C-w><\<C-w>w"'
+nvim -c "vnew|Man $1|only|execute $norm_show_outline"
