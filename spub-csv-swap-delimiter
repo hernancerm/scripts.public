@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+# = Usage
+# Pipe into this script a CSV file.
+#
+# = Parameters
+# $1: Source delimiter.
+# $2: Target delimiter.
+#
+# = Examples
+# `cat people.csv | spub-csv-swap-delimiter ',' ';'`
+
+while IFS='\n$' read -r line; do
+    echo "${line//$1/$2}"
+done
