@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # = Usage
-# Pipe into this script a CSV file.
+# Provide CSV text as standard input.
 #
 # = Parameters
 # $1: Source delimiter.
