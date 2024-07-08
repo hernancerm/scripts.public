@@ -1,13 +1,13 @@
 #!/bin/sh
 
-# = Description
+# Description:
 # Open a man page in Neovim with an outline.
-#
-# = Parameters
+
+# Parameters:
 # $1: Program, e.g. `gawk`.
-#
-# = Examples
+
+# Examples:
 # `spub-nvim-man gawk`
 
-norm_show_outline='"normal gO\<C-w>L\<C-w><\<C-w>w"'
-nvim -c "vnew|Man $1|only|execute $norm_show_outline"
+norm_show_outline='"normal gO\<C-w>L12\<C-w><\<C-w>w"'
+nvim -c "vnew|Man ${1}|only|execute ${norm_show_outline}"
