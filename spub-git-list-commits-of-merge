@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+# Description: Given a merge commit, find the commits which got merged to the main branch. This
+# would get the commits that a tool like GitHub would report as the "commits of the PR".
+
+merge_commit=${1}
+spub-git-logvo $(spub-git-topic-range ${merge_commit})

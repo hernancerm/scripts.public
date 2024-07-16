@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+# Descritpion: Given a commit and a branch, find the merge commit where the given commit was
+# introduced in the branch.
+#
+# https://stackoverflow.com/a/30998048/12591546
+
+commit=$1
+branch=${2:-HEAD}
+
+(git rev-list $commit..$branch --ancestry-path \
+  | cat -n; git rev-list $commit..$branch --first-parent \
+  | cat -n) \
+    | sort -k2 -s \
+    | uniq -f1 -d \
+    | sort -n \
+    | tail -1 \
+    | cut -f2
