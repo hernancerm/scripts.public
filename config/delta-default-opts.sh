@@ -8,6 +8,7 @@ DELTA_HUNK_LABEL='•'
 
 DELTA_DEFAULT_OPTS=(\
 --syntax-theme='none' \
+--line-numbers \
 --file-style='bold blue' \
 --file-decoration-style='blue ul ol' \
 --hunk-header-style='syntax line-number' \
