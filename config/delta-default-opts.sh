@@ -9,6 +9,11 @@ DELTA_HUNK_LABEL='•'
 DELTA_DEFAULT_OPTS=(\
 --syntax-theme='none' \
 --line-numbers \
+--line-numbers-left-style 'gray' \
+--line-numbers-right-style 'gray' \
+--line-numbers-zero-style '' \
+--line-numbers-plus-style '' \
+--line-numbers-minus-style '' \
 --file-style='bold blue' \
 --file-decoration-style='blue ul ol' \
 --hunk-header-style='syntax line-number' \
