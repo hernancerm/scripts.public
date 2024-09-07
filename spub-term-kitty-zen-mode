@@ -1,0 +1,29 @@
+#!/bin/zsh -f
+
+typeset -r data_file='/usr/local/share/kitty/zen_mode.zsh'
+mkdir -p "${data_file:h}"
+
+# Setup data file if it does not exist.
+if ! [[ -f "${data_file}" ]] echo 'enabled=false' > "${data_file}"
+source "${data_file}"
+
+# Get list of window ids in the focused tab.
+window_ids=$(kitty @ ls --match-tab=state:focused | jq '.[0].tabs[0].windows[].id')
+
+# Set the padding for every window.
+while IFS='\n' read -r window_id; do
+  if [[ "${enabled}" = 'true' ]]; then
+    kitty @ set-spacing --match=id:${window_id} \
+      padding-left=16 padding-right=16 padding-top=0 padding-bottom=0
+    continue
+  fi
+  kitty @ set-spacing --match=id:${window_id} \
+    padding-left=405 padding-right=405 padding-top=0 padding-bottom=0
+done <<< $(echo "${window_ids}")
+
+# Toggle Zen mode.
+if [[ "${enabled}" = 'true' ]]; then
+  echo 'enabled=false' > "${data_file}"
+else
+  echo 'enabled=true' > "${data_file}"
+fi
