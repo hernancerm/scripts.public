@@ -1,0 +1,28 @@
+#!/bin/zsh -f
+
+# ~ Parameters
+# $1: Split direction, either 'v' (vertical) or 'h' (horizontal).
+
+case "${1}" in
+  h)
+    kitty @ launch --location=hsplit --cwd=current
+    ;;
+  v)
+    kitty @ launch --location=vsplit --cwd=current
+    ;;
+esac
+
+# ZEN MODE SUPPORT
+
+typeset -r data_file='/usr/local/share/kitty/zen_mode.zsh'
+mkdir -p "${data_file:h}"
+
+# Setup data file if it does not exist.
+if ! [[ -f "${data_file}" ]] echo 'enabled=false' > "${data_file}"
+source "${data_file}"
+
+# Change window padding.
+if [[ "${enabled}" = 'true' ]]; then
+  kitty @ set-spacing --match=state:focused \
+    padding-left=405 padding-right=405 padding-top=0 padding-bottom=0
+fi
