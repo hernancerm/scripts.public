@@ -1,0 +1,33 @@
+#!/bin/zsh -f
+
+# Print unique kitty tab key, used to retrieve the enablement status of zen mode per tab.
+
+# CREATE DATA FILE IF IT DOES NOT EXIST
+
+typeset -r DATA_FILE='/usr/local/share/kitty/zen_mode.zsh'
+mkdir -p "${DATA_FILE:h}"
+
+if ! [[ -f "${DATA_FILE}" ]] echo 'typeset -A zen_mode=()' > "${DATA_FILE}"
+source "${DATA_FILE}"
+
+# COMPUTE UNIQUE TAB KEY FOR THE TAB
+
+# This key is deterministic given a kitty PID and a kitty tab id.
+
+# Get unix timestamp of when current kitty process started.
+start_date="${(*)$(ps -o lstart= -p $(pgrep -a kitty))%% ##}"
+unix_timestamp="$(date -j -f '%a %b %d %H:%M:%S %Y' "${start_date}" '+%s')"
+
+# Associative array key for the current tab in the current kitty process.
+kitty_tab_id_focused="$(kitty @ ls | jq '.[0].tabs[] | select(.is_focused == true) | .id')"
+tab_key="${unix_timestamp}_${kitty_tab_id_focused}"
+
+# ADD KEY TO ASSOCIATIVE ARRAY FROM DATA FILE IF IT DOES NOT EXIST
+
+if [[ -z "${zen_mode[${tab_key}]}" ]]; then
+  zen_mode+=(["${tab_key}"]='false')
+fi
+
+# PRINT UNIQUE KITTY TAB KEY
+
+echo "${tab_key}"

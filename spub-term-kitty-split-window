@@ -14,15 +14,12 @@ esac
 
 # ZEN MODE SUPPORT
 
-typeset -r data_file='/usr/local/share/kitty/zen_mode.zsh'
-mkdir -p "${data_file:h}"
-
-# Setup data file if it does not exist.
-if ! [[ -f "${data_file}" ]] echo 'enabled=false' > "${data_file}"
-source "${data_file}"
+source '/usr/local/share/kitty/zen_mode.zsh'
+zen_mode_tab_key="$(spub-term-kitty-zen-mode-tab-key)"
+zen_mode_enabled="${zen_mode[${zen_mode_tab_key}]}"
 
 # Change window padding.
-if [[ "${enabled}" = 'true' ]]; then
+if [[ "${zen_mode_enabled}" = 'true' ]]; then
   kitty @ set-spacing --match=state:focused \
     padding-left=405 padding-right=405 padding-top=0 padding-bottom=0
 fi
