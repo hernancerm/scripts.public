@@ -17,7 +17,7 @@ while IFS='\n' read -r window_id; do
     continue
   fi
   kitty @ set-spacing --match=id:${window_id} \
-    padding-left=405 padding-right=405 padding-top=0 padding-bottom=0
+    padding-left=250 padding-right=250 padding-top=0 padding-bottom=0
 done <<< $(echo "${window_ids}")
 
 # Toggle Zen mode.
