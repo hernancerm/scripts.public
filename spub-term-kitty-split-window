@@ -21,5 +21,5 @@ zen_mode_enabled="${zen_mode[${zen_mode_tab_key}]}"
 # Change window padding.
 if [[ "${zen_mode_enabled}" = 'true' ]]; then
   kitty @ set-spacing --match=state:focused \
-    padding-left=405 padding-right=405 padding-top=0 padding-bottom=0
+    padding-left=250 padding-right=250 padding-top=0 padding-bottom=0
 fi
