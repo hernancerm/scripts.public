@@ -1,0 +1,40 @@
+#!/bin/zsh -f
+
+## Get the list of URLs from all HTTP requests in a HAR file.
+## Dependencies: yq. <https://github.com/mikefarah/yq>.
+## @param $1 Case insensitive HTTP verb, e.g. `get`, `post`.
+## @param $2 File path (absolute or relative) of HAR file.
+
+yq -r ".log.entries | filter(.request.method == \"${1:u}\") | .[].request.url" "${2}"
+
+# Sample JSON used for testing:
+# {
+#   "log": {
+#     "entries": [
+#       {
+#         "request": {
+#           "method": "GET",
+#           "url": "url1"
+#         }
+#       },
+#       {
+#         "request": {
+#           "method": "POST",
+#           "url": "url2"
+#         }
+#       },
+#       {
+#         "request": {
+#           "method": "PUT",
+#           "url": "url3"
+#         }
+#       },
+#       {
+#         "request": {
+#           "method": "GET",
+#           "url": "url4"
+#         }
+#       }
+#     ]
+#   }
+# }
